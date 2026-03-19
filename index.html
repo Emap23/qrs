@@ -7,11 +7,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    :root {
-      --bg:#080d14; --bg2:#0d1520; --panel:#0f1c2e; --border:#1a3a5c;
-      --cyan:#00e5ff; --cyan2:#00b4d8; --green:#39ff14;
-      --amber:#ffb703; --red:#ff4466; --text:#c8d8e8; --text2:#6a8aaa;
-      --card-bg:#0a1624; --card-brd:#153050;
+    :root{
+      --bg:#080d14;--panel:#0f1c2e;--border:#1a3a5c;
+      --cyan:#00e5ff;--cyan2:#00b4d8;--green:#39ff14;
+      --amber:#ffb703;--red:#ff4466;--text:#c8d8e8;--text2:#6a8aaa;
+      --card-bg:#0a1624;--card-brd:#153050;
       --glow-c:0 0 8px #00e5ff88,0 0 20px #00e5ff33;
       --glow-g:0 0 8px #39ff1488,0 0 20px #39ff1433;
     }
@@ -25,7 +25,6 @@
     @keyframes scanMove{from{background-position:0 0}to{background-position:0 400px}}
     .wrapper{position:relative;z-index:2;max-width:1300px;margin:0 auto;padding:40px 28px 80px}
 
-    /* HEADER */
     header{text-align:center;margin-bottom:36px;animation:fadeDown .8s ease both}
     @keyframes fadeDown{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:translateY(0)}}
     .logo-line{display:inline-flex;align-items:center;gap:14px;margin-bottom:10px}
@@ -37,28 +36,35 @@
     .subtitle{font-size:.7rem;letter-spacing:.2em;color:var(--text2);margin-top:8px;text-transform:uppercase}
     .subtitle span{color:var(--cyan2)}
 
-    /* ENC PANEL */
     .enc-panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:26px 30px;margin-bottom:28px;animation:fadeDown .8s .1s ease both;position:relative;overflow:hidden}
     .enc-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:scanH 3s linear infinite}
     @keyframes scanH{from{background-position:-200% 0}to{background-position:200% 0}}
     .enc-title{display:flex;align-items:center;gap:10px;font-family:'Orbitron',sans-serif;font-size:.78rem;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase;margin-bottom:18px}
-    .enc-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end}
+    .enc-grid{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:end}
     @media(max-width:680px){.enc-grid{grid-template-columns:1fr}}
     .field label{display:block;font-size:.58rem;letter-spacing:.18em;color:var(--text2);text-transform:uppercase;margin-bottom:7px}
-    .field input,.field select{width:100%;background:#040a12;border:1px solid var(--border);border-radius:5px;padding:11px 14px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
-    .field input:focus,.field select:focus{border-color:var(--cyan);box-shadow:0 0 0 2px #00e5ff22}
+    .field input{width:100%;background:#040a12;border:1px solid var(--border);border-radius:5px;padding:11px 14px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
+    .field input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px #00e5ff22}
     .field input[type=password]{letter-spacing:.15em}
     .key-bar{height:3px;border-radius:2px;margin-top:6px;background:#0f2035;transition:all .3s}
     .key-bar.w{background:var(--red);box-shadow:0 0 6px var(--red);width:33%}
     .key-bar.m{background:var(--amber);box-shadow:0 0 6px var(--amber);width:66%}
     .key-bar.s{background:var(--green);box-shadow:0 0 6px var(--green);width:100%}
     .key-hint{font-size:.57rem;letter-spacing:.1em;color:var(--text2);margin-top:5px}
-    .key-hint.w{color:var(--red)} .key-hint.m{color:var(--amber)} .key-hint.s{color:var(--green)}
+    .key-hint.w{color:var(--red)}.key-hint.m{color:var(--amber)}.key-hint.s{color:var(--green)}
+
     .enc-info{margin-top:16px;background:#04100e;border:1px solid #0d3020;border-radius:6px;padding:11px 15px;font-size:.6rem;letter-spacing:.09em;color:#4a8a6a;line-height:1.9}
     .enc-info .tag{color:var(--green);font-weight:700}
-    .enc-info code{color:#7fd4a0;font-size:.62rem}
+    .enc-info code{color:#7fd4a0}
 
-    /* CONTROLS */
+    .size-badge{display:inline-flex;align-items:center;gap:8px;background:#020e06;border:1px solid #00441a;border-radius:20px;padding:5px 14px;margin-top:10px;font-size:.62rem;letter-spacing:.12em;color:var(--green)}
+    .size-badge .dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:blink 1.2s ease-in-out infinite;box-shadow:0 0 6px var(--green)}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+    /* preview pill */
+    .payload-preview{margin-top:12px;display:flex;align-items:center;gap:10px;font-size:.65rem;letter-spacing:.1em;color:var(--text2)}
+    .payload-preview .pill{background:#040a12;border:1px solid var(--cyan);border-radius:4px;padding:5px 12px;font-family:'Space Mono',monospace;font-size:.72rem;color:var(--cyan);letter-spacing:.14em;word-break:break-all}
+
     .controls{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:26px;animation:fadeDown .8s .25s ease both}
     .btn{position:relative;padding:12px 32px;font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;border:none;cursor:pointer;border-radius:5px;overflow:hidden;transition:transform .15s,box-shadow .15s}
     .btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1) 0%,transparent 60%)}
@@ -70,9 +76,9 @@
     .btn-print:hover{box-shadow:var(--glow-c)}
     .btn-verify{background:linear-gradient(135deg,#3d1a00,#6a3000);color:var(--amber);border:1px solid #ffb70322}
     .btn-verify:hover{box-shadow:0 0 14px #ffb703aa,0 0 28px #ffb70344}
+    .btn-sm{padding:11px 18px}
     .btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
 
-    /* PROGRESS */
     #progress-wrap{margin-bottom:26px;display:none;animation:fadeDown .4s ease both}
     #progress-wrap.visible{display:block}
     .prog-header{display:flex;justify-content:space-between;font-size:.63rem;letter-spacing:.12em;color:var(--text2);margin-bottom:8px}
@@ -82,12 +88,10 @@
     .prog-done{text-align:center;font-size:.68rem;letter-spacing:.14em;color:var(--green);margin-top:10px;text-shadow:0 0 8px var(--green);opacity:0;transition:opacity .5s}
     .prog-done.show{opacity:1}
 
-    /* STATS */
     .stats{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:28px;animation:fadeDown .8s .35s ease both}
     .stat-chip{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:8px 18px;font-size:.6rem;letter-spacing:.14em;color:var(--text2);text-transform:uppercase}
     .stat-chip strong{color:var(--cyan);font-size:.78rem;display:block;text-align:center}
 
-    /* GRID */
     .grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-start}
     .card{width:148px;background:var(--card-bg);border:1px solid var(--card-brd);border-radius:6px;padding:7px 7px 9px;display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transform:translateY(14px) scale(.96);transition:border-color .25s,box-shadow .25s,transform .2s;cursor:default;position:relative}
     .card.visible{opacity:1;transform:translateY(0) scale(1)}
@@ -102,22 +106,12 @@
     .card .qr-wrap.empty{background:linear-gradient(110deg,#0d1e30 30%,#162840 50%,#0d1e30 70%);background-size:200% 100%;animation:shimmer 1.6s infinite}
     @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-    /* Last-4 label — big and visible */
-    .card .last4{
-      font-family:'Orbitron',sans-serif;
-      font-size:.78rem;font-weight:700;
-      letter-spacing:.22em;
-      color:var(--cyan);
-      text-shadow:0 0 8px #00e5ff66;
-    }
-    .card.encrypted .last4{color:var(--green);text-shadow:0 0 8px #39ff1466}
-
+    .card .last4{font-family:'Orbitron',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.24em;color:var(--cyan);text-shadow:0 0 8px #00e5ff55}
+    .card.encrypted .last4{color:var(--green);text-shadow:0 0 8px #39ff1455}
     .card .enc-badge{font-size:.42rem;letter-spacing:.08em;color:#1a3a2a;background:#030d07;border:1px solid #0d2a18;border-radius:3px;padding:1px 5px;text-transform:uppercase}
     .card.encrypted .enc-badge{color:var(--green);border-color:#00441a}
-
     .card .num{font-size:.42rem;color:#1a3a5a}
 
-    /* VERIFY MODAL */
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,5,12,.88);backdrop-filter:blur(6px);z-index:100;align-items:center;justify-content:center}
     .modal-overlay.open{display:flex}
     .modal{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:34px;max-width:480px;width:92%;animation:modalIn .3s ease both;position:relative}
@@ -125,17 +119,14 @@
     .modal h2{font-family:'Orbitron',sans-serif;font-size:.85rem;letter-spacing:.2em;color:var(--amber);margin-bottom:18px}
     .modal .close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text2);font-size:1.1rem;cursor:pointer;transition:color .2s}
     .modal .close:hover{color:var(--cyan)}
-    .modal textarea{width:100%;height:80px;background:#04090f;border:1px solid var(--border);border-radius:5px;padding:10px;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--text);resize:vertical;outline:none;transition:border-color .2s}
-    .modal textarea:focus{border-color:var(--amber)}
-    .modal .mlabel{display:block;font-size:.58rem;letter-spacing:.16em;color:var(--text2);text-transform:uppercase;margin:14px 0 7px}
-    .minput{width:100%;background:#04090f;border:1px solid var(--border);border-radius:5px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--text);outline:none;transition:border-color .2s}
+    .mlabel{display:block;font-size:.58rem;letter-spacing:.16em;color:var(--text2);text-transform:uppercase;margin:14px 0 7px}
+    .minput{width:100%;background:#04090f;border:1px solid var(--border);border-radius:5px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:4px}
     .minput:focus{border-color:var(--amber)}
     .result-box{margin-top:16px;padding:14px;border-radius:6px;font-size:.68rem;letter-spacing:.1em;line-height:1.8;display:none}
     .result-box.ok{background:#041a0e;border:1px solid #006630;color:var(--green);display:block}
     .result-box.fail{background:#1a0408;border:1px solid #660022;color:var(--red);display:block}
     .result-box .orig{font-size:.82rem;font-weight:700;display:block;margin-bottom:6px}
 
-    /* PRINT */
     @media print{
       @page{size:A4 portrait;margin:8mm 6mm}
       canvas,#canvas-bg,body::after{display:none!important}
@@ -148,7 +139,7 @@
       .card .qr-wrap{width:37mm!important;height:37mm!important;background:#fff!important}
       .card .qr-wrap.empty{background:#eee!important;animation:none!important}
       .card .qr-wrap canvas,.card .qr-wrap img{width:37mm!important;height:37mm!important}
-      .card .last4{font-size:9pt!important;color:#000!important;text-shadow:none!important;letter-spacing:.18em!important}
+      .card .last4{font-size:9pt!important;color:#000!important;text-shadow:none!important;letter-spacing:.2em!important}
       .card .enc-badge{font-size:4pt!important;color:#006600!important;background:none!important;border:none!important}
       .card .num{font-size:4pt!important;color:#666!important}
     }
@@ -168,12 +159,13 @@
       <h1>QR Secure Gen</h1>
     </div>
     <p class="subtitle">
-      <span>AES-256-GCM</span> &nbsp;·&nbsp;
+      <span>HMAC-SHA256</span> &nbsp;·&nbsp;
       <span>1 000</span> registros &nbsp;·&nbsp;
-      <span>4 × 4 cm</span> &nbsp;·&nbsp; Payload <span>~66 chars</span>
+      <span>4 × 4 cm</span> &nbsp;·&nbsp; QR <span>15 chars exactos</span>
     </p>
   </header>
 
+  <!-- ENCRYPTION PANEL -->
   <div class="enc-panel">
     <div class="enc-title">🔐 Configuración de encriptación</div>
     <div class="enc-grid">
@@ -181,47 +173,51 @@
         <label>Clave secreta</label>
         <input type="password" id="secretKey" placeholder="Tu clave privada…" oninput="evalKey(this.value)">
         <div class="key-bar" id="keyBar"></div>
-        <div class="key-hint" id="keyHint">Mínimo 12 caracteres recomendado</div>
-      </div>
-      <div class="field">
-        <label>Tamaño de clave</label>
-        <select id="algoSel">
-          <option value="256">AES-256 (máxima seguridad)</option>
-          <option value="128">AES-128 (compatible)</option>
-        </select>
+        <div class="key-hint" id="keyHint">Mínimo 8 caracteres recomendado</div>
       </div>
       <div class="field">
         <label>&nbsp;</label>
-        <button class="btn btn-gen" onclick="toggleKey()">👁 Ver</button>
+        <button class="btn btn-gen btn-sm" onclick="toggleKey()">👁 Ver</button>
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button class="btn btn-verify btn-sm" onclick="previewPayload()">⚡ Preview</button>
       </div>
     </div>
     <div class="enc-info">
-      <span class="tag">[ FORMATO COMPACTO ]</span><br>
-      Payload: <code>Q:&lt;base64url(salt·iv·ciphertext)&gt;</code> → <strong>~66 caracteres</strong> = QR de versión 4, muy legible.<br>
-      Cada registro tiene salt+IV aleatorio único. Sin tu clave es <strong>criptográficamente imposible</strong> reproducir o falsificar.
+      <span class="tag">[ PAYLOAD DE 15 CARACTERES EXACTOS ]</span><br>
+      Formato: <code>Q</code> + <code>base64url( índice[2 bytes] + HMAC-SHA256(clave, índice+código)[:8 bytes] )</code><br>
+      Total: 1 + 14 = <strong>15 caracteres</strong>. El código original <strong>no viaja en el QR</strong> — solo una firma de 64 bits ligada a tu clave.<br>
+      Para verificar: se recalcula el HMAC y se compara → autenticidad garantizada, falsificación imposible.
+      <div class="size-badge"><span class="dot"></span>15 chars · QR versión 1 · el más pequeño posible</div>
+    </div>
+    <div class="payload-preview" id="payloadPreview" style="display:none">
+      <span>Ejemplo payload:</span>
+      <span class="pill" id="pillText"></span>
+      <span id="pillLen" style="color:var(--green);font-weight:700"></span>
     </div>
   </div>
 
   <div class="controls">
-    <button class="btn btn-gen" id="btnGen" onclick="startGenerate()">🔒 Encriptar y Generar</button>
+    <button class="btn btn-gen" id="btnGen" onclick="startGenerate()">🔒 Firmar y Generar</button>
     <button class="btn btn-verify" onclick="openVerify()">🔍 Verificar QR</button>
     <button class="btn btn-print" onclick="window.print()">⎙ Imprimir / PDF</button>
   </div>
 
   <div id="progress-wrap">
     <div class="prog-header">
-      <span id="prog-label">ENCRIPTANDO…</span>
+      <span id="prog-label">FIRMANDO…</span>
       <span class="pct" id="prog-pct">0%</span>
     </div>
     <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
-    <div class="prog-done" id="prog-done">✓ 1000 CÓDIGOS LISTOS — GUARDA TU CLAVE</div>
+    <div class="prog-done" id="prog-done">✓ 1000 CÓDIGOS FIRMADOS — GUARDA TU CLAVE SECRETA</div>
   </div>
 
   <div class="stats">
     <div class="stat-chip"><strong id="s-total">1 000</strong>Registros</div>
     <div class="stat-chip"><strong id="s-gen">0</strong>Generados</div>
-    <div class="stat-chip"><strong>~66 chr</strong>Payload QR</div>
-    <div class="stat-chip"><strong>AES-GCM</strong>Cifrado</div>
+    <div class="stat-chip"><strong>15 chars</strong>Payload QR</div>
+    <div class="stat-chip"><strong>HMAC-SHA256</strong>Firma</div>
     <div class="stat-chip"><strong>~50 pág</strong>Formato A4</div>
   </div>
 
@@ -233,12 +229,12 @@
   <div class="modal">
     <button class="close" onclick="closeVerify()">✕</button>
     <h2>🔍 Verificar QR</h2>
-    <span class="mlabel">Contenido escaneado del QR</span>
-    <textarea id="qrContent" placeholder="Pega aquí el contenido del QR…"></textarea>
+    <span class="mlabel">Contenido escaneado (15 chars)</span>
+    <input type="text" class="minput" id="qrContent" placeholder="Ej: QAbCdEfGhIjKlM" maxlength="20">
     <span class="mlabel">Clave secreta</span>
-    <input type="password" class="minput" id="verifyKey" placeholder="Tu clave privada…">
+    <input type="password" class="minput" id="verifyKey" placeholder="La misma clave usada al generar…">
     <br><br>
-    <button class="btn btn-gen" onclick="verifyQR()" style="width:100%">Descifrar y verificar</button>
+    <button class="btn btn-gen" onclick="verifyQR()" style="width:100%">Verificar autenticidad</button>
     <div class="result-box" id="verifyResult"></div>
   </div>
 </div>
@@ -246,95 +242,124 @@
 <script>
 const codes = ["LLZKA6SJO31G", "66OI9QV8BA97", "VZBPRD1LWUOZ", "VVXR6QZZ7OOF", "VPGZRGER2HJQ", "9KWN38TY07Q0", "SFQJ33FICZS6", "HKL53FQICRF6", "5KRXSW5HCHB9", "PKKTGCFSSVP5", "F2CI58VJG31N", "Q3PYZ9TSHRET", "13ND1T50M1S9", "A3U7EGCR4E4U", "AMHD8POIEPZ8", "UK7BTEQWK1IN", "EF692TSQ7H9X", "COM704ADVWFB", "5XEQPUC3LAJQ", "O5NIV4M4T75A", "7LSD5TV567VJ", "88RTC7C3QSRB", "2TKXLTD2K5LS", "RWNIEL8421F2", "LONWRSQT2CPP", "2J2I2W9KRLL5", "SATRSF9THZMC", "YGTEEN0SICDJ", "MYF9PEBPUEAB", "U7GD0F7JWJX7", "LQ8N3CIGVFLS", "CCQNZWUCQUBI", "FWRG13RXA0Y1", "Q7826CEAA63E", "G45O039WZHNF", "UQ5LIIMRNT6Z", "ZDHIQXZUPLJZ", "AWPHBQMYGRRX", "NRZ5EDO758X1", "S5XP14FQX2OR", "1N7V9K5JS85L", "NHQJ3UQMCL35", "79KJ7XTS0K91", "N4GB67NNCNKN", "44GNGXUDKHMZ", "D6B0JH3I5I37", "UNILA68AR3JB", "T5T86639UOGG", "Z5QANBTMCM4V", "464U12HLDLM5", "O9VQF2CRARXO", "BGA7VBYVS0W1", "9AXSG6W7352I", "1YUDO196ZTJ1", "R12LRCSKYX64", "GM0ZWF96MROC", "EYYWZQKRZMCW", "RWAELKVLW3IK", "3AXCHGOD1JGV", "TFRE8N6PUMVF", "16SRGHOIZ3LG", "S474T4WV4Q5F", "SPBRWFFGWM4H", "ELHPROBZK6I3", "CUF3YH6VUZHL", "PD1K3UUMSEP5", "5K3J9SSA71UC", "0C96JXYN9LC7", "S8S7Z5VNWCV4", "X17KEEW7TC51", "Z73667YSH1O8", "YFOIJ5FODMJM", "H86H3P7KYH36", "O9B9GVJ2INT5", "MQ4YFYWZV4UA", "93UVUS5L5WCP", "6H5PNDH5MJ6C", "E7YCK7YBAH30", "L9SCAL76KQPR", "31R600TFSCOM", "IVSUUI3XDNPO", "XRF8QIFZW92J", "1W2034HX25TI", "W4EXJ6B5IYTS", "E3C0460Q2UZ3", "00E6A0LJWZGF", "T3HSR7M3MXL4", "16GCM9FP3L72", "YLBCEKISCQQY", "6FN95N51LF1J", "MGN7SIB9Q1TA", "DBP6EWSP7HMC", "1BT192AIZ59K", "PRTN78W18QKX", "4GQOKZV9ZHWG", "PG6GTUNTRQKX", "C10G097SADHG", "JCKZUU52E8ZU", "C7IBXSFQ55VB", "HN0831JDLO7T", "V3CXMBVYS6EH", "6ZPHMNRBBP65", "OBTO9E8DRNKD", "6ERJQ5IVCEF5", "3QQ5L06G70RJ", "G0MHQV4U3Z40", "RYYRQ6R0IJH0", "67MGGTL7WCYH", "SHAX79FGED58", "Q04G9IMBACOT", "SYOJCO9OGTDM", "D2ODVP4JDBUJ", "1AOXYINR3112", "T5CV3J65OUPG", "BOWE1644TQRX", "HAQ5K06PNY3E", "BNGQPW1VZSIH", "EIDALWRXO2U2", "54VP9V6EENZK", "Z8G0EKYSDFUJ", "NUZCFVNBAOMO", "H85GX4TYPFBS", "4N46SV6UQYJH", "WS4EKAYP9KU0", "D7SPC7XJH7L3", "8QXR66MBAOPG", "3BY1AWV5JR8U", "SHP4417MIHX6", "TZCUA6FI2CUG", "R77XKLODKTX9", "BSEM30OSTY72", "O27O3GOG5RZO", "VT06PA1CQQQ7", "4FNZLOFH6DUO", "AADCMOL2RWM1", "0U6U5RELCTVH", "YA8QFH5SN6SW", "GJUFLU1HCY5W", "RJIGVOVAWOAO", "VT2YI8ZLADQD", "9C1PBBDUL0AL", "DHDC2051V3F2", "4G0JIFVRG91Z", "DJ0UE3S3BOLV", "YBP9Z9FCCYOC", "8M5L3BF0HTB7", "87JU9A17MNSX", "FP8BKSTB0QMC", "K9SNCVSSPNBO", "DWA1D44JXIKS", "NCPUJ0NZ0IBK", "XJI0EOAE7PVQ", "GQFIOLG1GPUP", "B343D5NQPJAX", "X9583QT50VUS", "YGLQBA08YGG3", "O3XPRKE6TLFS", "UFOORYZ9C860", "ZMBR0XLZBSJP", "96Y4ZKVGQSTX", "K2A8ELQE5KST", "4FXW6YA943F5", "PX6OOA5D1VW7", "RK7Q4H2LZF9S", "2RQGTK7X729W", "ZPBTDT2YO1GQ", "F61AKDV4CG0U", "NQ5G6E2HZ2CK", "NLU5UNQRY2ZD", "D26QFMYY3YEE", "RM6AGYO24466", "2C3K4BXJ9V08", "XIDS4536HJ06", "P217N3OPZAX9", "WJ6EVAKH3LEF", "E90H85OBP3CU", "LJ7SD9VZCTF7", "6KPX1H8K27IU", "VNSUEN4KVUVA", "A455IK3EMW6U", "DXKYTTV4PCEY", "5FF0T5SKWS5G", "KMUJPUYD6C0Z", "L3JLU84H2GTF", "JWCL88DTV0BD", "EKQ5QROQ0A0Y", "C2DUAP19H6R6", "OSUPTRLKD6WA", "S20XARABGJY6", "ZBE70QKN4CUG", "KV1LJGK4BKP2", "FF1EJYEQ0AAI", "4YOA705U328M", "LHA0N14GGOT3", "9SGASPGDWJFU", "K1GN6P0E27B6", "415WI2OXQINA", "GZE577LGGFON", "9IINMY8LOSW2", "N26NJOI75ZT3", "LKTOSTZTC9Y0", "A6FU4WOIX23N", "FBACCHBNKURU", "4WL0BQT0E28N", "DWZEGBQW9G45", "0TZYRA7F8UFL", "PEIM2XSXVOBS", "OD79U12UYM29", "X7FIGG8LOHNY", "U812RP8Z8W79", "CRJLLFLKCBJU", "TJ4CTGL4XOCC", "2SM1FSFIX89L", "EN4GANB42T6X", "BQQX4RPQ15LM", "35IN3UJAF5UH", "BKD7E80XKJAK", "4JNNGZJL50EF", "AUU5ZEVLYLAY", "BJRI7ZEKICBT", "OBEPSHMFW805", "FIRWOVN1W355", "R0KPH9Q4L6VW", "GR40NRAW4GNN", "DAB4MQH9EHUA", "9EKPV1U9SE93", "2403277JP6NO", "665DBWB65RBS", "BP8HLG7Q6GXN", "ALDQMAQ1IOKM", "P7LNHGWJC4VJ", "I03P15QSR4EW", "W235FLPG7KD9", "7XRNMSW2CWEK", "STT0JG1C2JWE", "HI495MEYN002", "QQYF0WZY4NMI", "89VF6L91BVT5", "CC61I7CXQSJ1", "H3A6IBS69DKV", "F9AHE13TA4DL", "KZTTDRDBSJEU", "X832I2OUSU0H", "CXX0MD8RZ3D3", "RD63VY3IS5XZ", "O5W9E77O5CRC", "QYNU2F4YL1ZI", "TKU231APM0XX", "JMIQOQYEUZA8", "WX05FJLMUPI4", "0B8QUUH46PJ7", "LFSVUOG6PF94", "XLGGCPK3BHLE", "WEPQSNLDXU5L", "6MN5ZM0E9DFB", "CHLBH282YJYX", "7UOK2WC28KTV", "POCR28KO32WQ", "98Y8C5K8P186", "44GSXI2MYN70", "QES2T3WN4RRD", "8VEUU23HWCHX", "PDF1MP97BEIO", "T8IX20WS9ORS", "K1A7KMBUWNT3", "J93FKUTGRTF9", "SUYYMKH5WTI9", "AQCNPSAI6V3K", "55ODJKU93IQB", "VDI85XNLBCWW", "2ER7UNQCEPTK", "E82BJRR251LD", "UVPZJG23BWOK", "JU1SGZ7LR5O2", "G57KV5RT1GQO", "JKWTB4PV7JGL", "4TS63LDRNONL", "T4QUS2Q9T7MK", "M542ZIWJPJFZ", "C4KPKX9JX3R2", "8PEZRAF9M0X5", "OEVMRSIXGXKZ", "T6YJZ95IO6ZW", "ZQ3YAPBW24GI", "50OFW8VP4F5F", "7H4UWFD7KOQT", "1DABXAS48SX0", "CRON70IE2G73", "RBCBHG1CQ4KQ", "87A0WOLC2CNF", "UZ0P4N2N7W6S", "PJQOTVO2M36H", "5PUPL6IIGICG", "VHXMU4NCLXLR", "P9S6VYI8JBB6", "CJ4SMQDC2RNM", "Q2R7CPWG7KB8", "ZWC5T45AFB5D", "VQR00WLJIJGR", "6VG7SYZVR2C4", "Y17NY6J7ZN1A", "LCLY8KE2MXJR", "X2F84PM99ICL", "CMLXF4ZKY6Z7", "HDOXRAM90N4G", "K2RBM3RRPIBJ", "Z6RJ0Y5QS6A7", "8ZT6B68K2ME1", "L2DEVUNXOV97", "329V8DCLUBTF", "8GCUMRLH6TMA", "CFSYN6BCVV8B", "J8BE9QO2LQX4", "5N3POUFIDNCY", "XRH050UNJ2K5", "YPET1PJHFE7X", "2SP6BGZ91W7C", "7ERBIYD7G65E", "Y70G0QWFHAIG", "8F2Q3F8AP0XD", "Z7RM5KZA408A", "Z1LCSJIZEJB6", "D995CYZMDR83", "44DOBPSKG4SD", "JONQ989IIYBP", "G1LBJBCDBEXC", "NTC7E39S9599", "91YBSZVHLKP0", "7L16I1FHR6K1", "8HEGU1K0IXJX", "TUZ8P1DCNWJZ", "D81UB35QUQP7", "3PV9GSZU5I4R", "S2MY7EAXRTP2", "PEZ8D6PZUP1S", "Q86B5GKOK7S8", "0J676HS95YKH", "7891GNP4T6PR", "YNI850ZJQ5SH", "ND2XVHANNQXT", "WCWTT31MPQA5", "XBQGV8RR6NQ1", "0UP5SGYBV8GB", "2BACMZH9PX2T", "SN6D6JESJGZZ", "934W95DKE6R7", "3T4D88HRO0Y5", "V4KMQULDN8FN", "324ZXRJAVDWY", "TMUSWC3T4HOK", "5JZ6D8UYR4UH", "6NEXOHNKTG39", "KXNNU6A97XQN", "89Z2V9BLMBGA", "ATPXW2N3U7ST", "CASK3VR61LAF", "60ZKYM060EYH", "Y43USCO6O2YI", "F32XJ9JFZ7NA", "KJFUH2FONFR9", "MOSYYCCTCSW1", "HVA1QKE91HKT", "8BP54AKNOUTV", "47FY42QXCNC1", "S0PLWEON04WP", "RSY11BUFSIJE", "17P1UOKC0UZE", "VYIP82MUI8E8", "WJ4PZJTXLWLV", "HX8N43ZGAOTW", "BR4PBTOWB08D", "3QROMD060VRS", "U0TYDBYHF39C", "J9ZXM0NN0F8G", "X4G8CUFTTYM1", "H3H0KZU8SVDW", "KEPOO1UGWSZM", "BZ9CX6HC5ZU4", "0SY6NM7GUHTK", "LLG8N3T0R29V", "Y990YB3R55AM", "PG7ZL9GUQF77", "4X2TQGVH7ZJJ", "P9RCP4ILIYGY", "QXGG3URWKFF4", "2RRMX8AX91UT", "OHIHCRQRO86H", "LP8IHSNQQLBY", "N7CNC20H6OH7", "73X12UX1VX79", "F6TU6RJ3AZC1", "N2POBCTDRYUC", "ID8LQALY9U99", "9794U9IQQARY", "MKF27VFNDYJI", "GGU6T5V4G3RZ", "V9BEBSZLDA6N", "2W3P6Y6NXHPZ", "U8DCURMDKIYZ", "7J9VPJK094NP", "UE71SH7OPG44", "7FEFMBOXPDVM", "QGYCFSX3JETN", "P2XGH8HIPKVR", "DMVZLE6F12O5", "RQBRGRCUSILO", "DR46HE9SOBL6", "MNWNY66LHAT2", "CPYRMI4CE6MK", "E9PMRTGG72WZ", "O8F3SXW27UPG", "YHFYYIZJ0FFE", "PREULJULZ8H5", "J57LWP632KQK", "HE0Y0WPRDF5D", "HVO3GPLASGQV", "84RFNHPRSQ82", "DJYJ5YG908VE", "MBPEUL54QW1Z", "2SU3LZ00AE2M", "RFPBJBEU7J70", "2RVBSMLFV4SO", "K6CK15S5YM0A", "8UIKGXLNNZM7", "6B96NZ1MX08Z", "3SA869DIBGLI", "UPMX24OKO732", "OMOD9V9KVSMO", "BQCZKON4W3YO", "A34X5OBXKTBL", "SHKR0W65IHNT", "RGKUKHB984R3", "86JMUGXULIKL", "D3JYY5THSNO1", "LGYN1WHUV4M3", "BVEJIJXPG051", "DKGQPGR3NOYG", "XY30XCW78J8U", "D65OWD1ZRXJM", "TLSSNNKEO4EZ", "0KMXRFOBOT5G", "VGTT9UGOOJLY", "G7SBMOM800BV", "AHSLVFGBAWQ4", "CD27ALY4A2E5", "0KJ8K5ER87PF", "3B1JWN67YLDI", "O6YQJBNF79QV", "1RCAV5ZPJ250", "CV80XHY1DNU6", "K9HBLVQE8VKH", "BTTTEGYZ9WTR", "DV3N7EGB546T", "40KTZ9OMN3ZI", "XH7T5V4MY6F4", "KVZV07DIKPHT", "QS3SYU7A9FMB", "3XJLDDEUOIL8", "42L2JVP7O227", "OYSNP05K0UWQ", "JUE4Q1NGZYC1", "5KQ8KU3QIUW2", "HJ50S2SR5QOF", "ADW1MWFO9R8U", "P2MPRDCDNL49", "FN95RSD2SC47", "YZNHWZB7ZJFI", "55DM2ONGLJ0S", "WEJ6Y19Y667N", "O35RYME52XX2", "VO5BBU1AFB2K", "M1M3LEQ1XJXR", "ODUB4HDGO61G", "7WOLMN2JJR5W", "MT46PMT2A7EJ", "N8SBDT071HWX", "24A1HOM5JO32", "1XQLII8JNYGO", "5EFS21KJEF9C", "SCMIW8JGTZJQ", "X6UFIKGDI016", "0X686YP7R2RK", "HN8H1T59YYDN", "UQ85Z51ZV2SA", "UV6D2A2PJ6WK", "XW7MBIOXIY90", "N2D11IHJBF0H", "GUIEVYB8DQ9H", "5HE8QBU074GC", "LV6FDNY642QU", "7XWFSDQ2WZTL", "E979VWKU3U8L", "UG9M44L0YWP2", "P2A4JCH94TKZ", "ALLUHTSJG89P", "8C7QU8Z13YI3", "48GF97KXC7BW", "E12CVL3SP52B", "5P3UQ01C4B9N", "FQ28TSDGQ0NP", "H85Y1CIHEIU2", "C75N6T6M8XXM", "I84QJWUS6QDO", "Q93WTBYBNRC9", "F30FYOV1FCF8", "OMOUJFZN2CQV", "3SGV5L6XHYGX", "JL7MSIZEBNW0", "34R976KWO3P9", "S4XB03S1AIVU", "AVSDGQQP5PP1", "FNF81PHJSF3K", "2EN9T4ZZG3QT", "2FZ40D5NI39X", "KMPSJKYA5Q35", "NXOU9HCA2AJ3", "Y35VMZP4M824", "4ZYT3EQF141R", "CMQ0AAZJK0LF", "HFD8EF4CGPMB", "03TX3UA6EXBH", "8XUK7JU2EK3C", "F6MROQZTZF7X", "17JW6L0B7TPQ", "C59DD7IIZM5K", "6NZ0TUSJKKL4", "1MZP0Q5709NU", "BUS0KBE90K22", "A3O05UF6AEN6", "2LV0LWN8X2KN", "XIMG0G4FCV9U", "M3NKJ1GNOBE8", "HGZ7EBAI87VW", "RTS6YJJNELLF", "AGE5WWZWZWYJ", "MQPGC9V5HUFT", "1XX3TG3I6VZJ", "8R5TU7TL6ZTP", "HETJVG9HKZH1", "ME5KXAM7RD9H", "V8RZQK3J49S2", "2EIZP2CA18E3", "CZ2R11GFNV95", "1SRZP3T9XELU", "6VUG0LQ1K47U", "IMAVP4QI8O0A", "PLQJ3BIIRJ7K", "LJ5FZ58ZNDSC", "N3RLGXXI60OS", "GJI9RDUV1D6R", "GIC8NTSNSVO6", "XCAOU3DFFQ9Q", "VPHZOIB3AT8B", "SBNWWXC2KWDB", "KFZILOYD5Q0F", "V4BRHQUOPTTH", "CL536PL60XRK", "VQGY20F6GMD2", "NZV5XWWJRLT3", "XA4651RROZY3", "1CM37P9Z73P6", "C7TFVQ94PBO9", "GLD332VAVP5T", "OWA2UEZ0W5HE", "556KEVI9I47P", "MNCILL5B0K4M", "F8PYHRT6NIYA", "TLR1552QI7C7", "WHI4OBVP2V66", "ZT6059WQMQB7", "1828GJDSH05C", "E2X7M46YH15U", "Z0ISZIWQJ2BR", "N9ZTN7X21FXW", "3IOPUUZFSPG7", "N41CX3E7BOEA", "F2TD3OUG4VF8", "XG8M8MKVEWES", "4LZ10DRGX97U", "8W737DLN75E7", "7W549F2IH8Y3", "IYXT01HTUVYB", "5AYBKG3SS534", "P995BVGIBD4M", "F341OFPI7W4G", "IJH4NHPF14XO", "F9GCU989JW8E", "5XWKW5NN4436", "2PWHGWDUFN8Z", "Y9OPN8VIUKNR", "FG52OTQ0EDX7", "F2YF1YDP5UBG", "I995HCQ6A4UG", "T0V30W0L6RE2", "IISSOAPULKLH", "XMAVINOUCBE3", "U4XBR47NT57M", "IKAL21U97PXX", "IJMSWHNCNP6T", "IJL2LEZF9XD2", "0B4AJNBGLJQD", "R3R105OK5DMW", "EES7T6XKCE1B", "WD13VJJOTFIF", "PDL645HF3MU7", "03VOM1DA8MG7", "TDSEPS3MK581", "F7R4BX53E3D3", "IFM8EV8E9HJX", "PK8BQIX58ZFU", "QK1IQVT3AP3R", "O1HQD7FRK2IW", "U503H3224UFF", "JHULUQ45SGVY", "ARG2JPJG8JAH", "VESGUAOFINEI", "IBRBQFTXNOOU", "LLRZ6UWIJZ8A", "2IHLENZQ9LJO", "146U3P8LVH7H", "BPA0AA0KYXBL", "W5AYZLT3XAPC", "3M89RWYCTT2I", "2MMXJKP8T0AG", "M1SK6AE3MK92", "PY2QKW09XP1X", "VUVEO9Q7MGDE", "D8LA8J4TBGUM", "PZJ0WXB5GM2V", "UZQOLWZUE8RF", "9XG60C83TO5Y", "CXSKC2OZYQ45", "FSYMSDM93F8T", "OF7IFHGKOK89", "DJUX7FQOJ5WO", "JD2IDSKV51WC", "IOIZV6S9JMD1", "I0RAQXH77UNV", "M2VGTDF6HFQN", "M4GSTUHBUQG5", "EF9L1HPP0CXI", "HZZI7DZQ43WM", "9FJMX2WV0OJE", "5XXY1WQKMLFD", "11DPDWLTCNYK", "7NTY95WLLG94", "CII7EEK06VHZ", "9RSJYJ8QEVHZ", "M7TXH8707O0F", "0AS92TUCWXX9", "T33F0XIOQZOW", "RYNTQR0MHM7W", "YJF4FOL04099", "KZPXRUGV09TW", "T824R789ULK8", "E6LDCFY99IU4", "PWN3NOWZ1WU1", "CE8TSGGO4XQF", "8LAQL2R3CDJ5", "ODCNCOBYD971", "8JGAB2YQ83UC", "V12UA9KP5X57", "MAGBV1DYIWSA", "BHYEFE4AXMR9", "4XMM3AR6Q4YW", "TWA95WLTV56D", "O1VE2RN0N2L2", "W4I3BESPF1Q0", "RB762SRCZ7IS", "6G64RT2Q7AKO", "K9OKPXIBYQBI", "0PMI27P5SA7T", "0Q62HHKYCEGP", "SEJITTSXI320", "W0B9N50HRAPC", "VROBL6V7EI7T", "63FG5UQUVW9T", "PHJ5VZEWLDG7", "JDKERP6J2LO3", "IML63JXITX6H", "NNT99LCQC5ZJ", "3OLUF7NY3C0I", "T7GGT5RBJQSM", "DZ4WCIUBB8JG", "WUR8I4INLRIO", "RPQETWVZYYVB", "XM4ABW4J0REJ", "P2HIK06HX5H5", "A6ZC8S7ZDSBG", "E5WCGFOSMJCT", "I0EUC0AIJSVE", "FJELOPGY4B7N", "8ECUTYKQ7MLH", "OP4R3PBGW96C", "6I8KAFOF46J6", "TXILUR7ILRM4", "4ZDPKOOAU5ZO", "DWH9P5L22L8J", "PB053G8PZR2F", "7J8612UMCAIW", "BSYK74C51CS6", "6FFBRZEQ7V23", "OY2HUYHAF0IX", "4OH2ABY8GMXD", "5KLDNU3T9W5V", "XUF0SAEZY2M8", "6Y3L8CWPBV0G", "E8HGGFS1LV2L", "QF6BGQO39IMH", "G6ZNHMQGSZV0", "BAXRZ7USM58K", "I047Q2HP3CMZ", "XQZNGW8XCO19", "3GOY2YNL86VY", "KOGA8K5PN3KX", "F0XWYBTNX2UT", "7JYLTDMKG2HO", "KPS1ZRKOC80G", "IXS5QNHGGLK7", "R8FM1DGK422U", "YYUKUMSN0HLP", "2FOJE7OPU1N2", "QLWK00JRTAJI", "XE3MULFHBOTH", "K90Q4QX3Y4C6", "EFOEP1R34G3W", "805JIH58836L", "PLJMLL8VKV00", "WV6JYQOUQMKC", "NAIDVZNYS4EK", "1WLH5PO1BIN9", "EIVXPCG7UV6V", "0AXYG0ILO8PW", "DT5346QI0QNT", "SZM1NRQZ93G3", "ZLZMRW8B841A", "OXNOIR6I8RJD", "2OR646RKF7AB", "XQD59OTZ5OG4", "B22LK37U1MSA", "7W8OIAYY88JR", "F46UPIZVA4BN", "MM0T0LI4CD69", "GF5PUBY5O2KZ", "8VB0WXQ3T7OA", "QB2CNUSVYIAB", "FG0AMZ6I7D0E", "7FKNPXQ7PHHX", "1DSEC5LP1V2L", "G189BLYL6CGB", "1DLVJ1CJUO8H", "94GAZL264P88", "F0SNRRJV5MOP", "9YPAGVCQ4206", "29AGECE1P3IF", "CYMLVJLJ9607", "U2Q2H0WCP2PC", "VSX89V8HP2F1", "5J3BQWZWQYS4", "GH6CPBRDH3UA", "A7FZFHMVNMF2", "RN8UK3RSL80H", "NZ8589HFUBUE", "1ULQWR0U73BO", "5UEQVFP9GAJX", "796JNE3SSHMB", "14D8ZY4WZPGB", "RADQV2S3PU49", "LEC5AFDI4VIN", "3OU0L2AV8EAY", "1A7K5QZG8D89", "EMOFW2MPJF61", "RB4S9N2EAYN2", "EBRWG14YMA13", "5EHX7T9OYEP1", "C3OHPBU55A1Q", "WZGQWWX8ME9R", "MO61UDAFMRZN", "X6CFRFWASCY7", "U7V88XQJL24P", "FDZUWJUK0X5M", "DKSQLKOHXO05", "CKK53G5733ET", "3216LNZVYF7Z", "7UGIT330V001", "Q4I6MB9YEA8Q", "AYGK7D5923VD", "57H11OE1BNZU", "R4W8E2HMDNWH", "NTTJFMU9JKML", "OQLTQO7JJ8SM", "MM777PVCOV03", "BE1OLSLCXSVR", "4BW0QP9RM5X2", "24R7J2WTPU1M", "ZVKUTMLMGYI6", "6GB4S46D8EXB", "446RIATRQRS2", "07MH91K492O9", "VG87UUUQJDNK", "IHAWU9U6PQFI", "USINOVGAXVG7", "REVLD3OZKHVX", "UJA8MQ9POS3N", "NZ4HB89N99FK", "T6IBQ3ZKNG05", "4NRCTCHEVDJN", "BBQOPX12QR0A", "MP9C0HKHRHNI", "UYLDT538EXF2", "QXC35ZSQ3728", "27W06HN0AA6V", "3HI4VI0GI6MK", "2N86K0JTMPCA", "VY43L0S3KH82", "NVA8Y1TQWOQN", "ST3CF4K6KGAC", "Z9X6CAUY9VSG", "EM7SKN9D2M54", "HDSZR4SJ4XAW", "BG5GD63M13WS", "ZP42OCLDKQJM", "YZ28PC5QFVOZ", "UBCVQEB5IXRY", "P926IDY9FBPP", "E5OAOU24UUT9", "K7S4KS1DY41L", "LOFJM570U6N5", "1QK48BHKX5EO", "ON6SCN9ZHAPT", "WBP1HAJ0JCFG", "OKVEYSTEAYQV", "WUTVUATWZ7YR", "0104L9FAXF2Z", "FOUHYQZ6A4W6", "ZEE823R45MVW", "2HISJ2E8F8UG", "838O4SQYX023", "I7701SSHFHBL", "GFCVEOHHTD61", "M24T78MHFM6Z", "RV8XSGV567GM", "M29HWJY7L1I4", "HYHOCBKR9N23", "TRPUWSUATYYI", "TVRB0IDWBXHT", "MYDZDL784JT0", "PZDKANOD37DF", "8UFX1C35HIXY", "XHAVCJVTMBIF", "RVHY4QWAZSH2", "3H2BWCFV3KZC", "31B3QWTOAGUQ", "DTTCS3CI4ZWV", "F8EXE482UYBK", "G0KBVNMG155V", "9XOLWGR4LZOG", "8FF1IFLI4VGG", "WMW4EF0U4X81", "WQ4DP05DUPWK", "UQBFW05XTYY1", "VFQ4RVIHVT4T", "PLMFZYUGGVPD", "VFYW5OHH1RAC", "ZZKO5HTG62R9", "Q3D4SN3O32DS", "95WCAZAMVCCU", "8BGLHLYDNGZZ", "TNP5RU46SYJY", "5HYM0JRR89HZ", "HCDSK9NB0EFT", "0NB7RSVETN69", "54CKVTQZA1PU", "I1N1S056MBHO", "WN1LOT19RM9H", "XZ58UPED45KZ", "CJ7R6J896AXM", "SBEJXVUJK7HN", "7L0XU3EYN1CX", "UF6K1H7EOUY1", "PUDL3VT6FKAL", "P3SO7RAOFLMS", "IVBAMYWHXTWC", "AEDNN93LSSGO", "A1KWS08O2UMX", "IG1MJHSP68JV", "ZUF6H7AMZ79O", "0KECZIXCAE1M", "8YOUSBEL6SA8", "127E5MG95LGD", "7Z4BZDQDGV3M", "KDFFUWTFT0GD", "VQGVOQZ4EEBX", "CA7KEDHPNYEE", "3TFBDQ6YOWX9", "JWIZENQD7PJF", "Q42DDQPARD0P", "05MUFPKQIWEH", "SOP10RM6880D", "MK7BCPOMISJ5", "428PG2JLZDQK", "AR9UYVHS9EUF", "7H6RDMTRSDA2", "60Y7YQ3UDG51", "XSAS5NAAOGRK", "BLROW550EU5Y", "V5LIP316JWRX", "WXKTDU2YDKK0", "6167PS27SNJG", "UQHFRI0IZOY1", "QSZLE35KWUO2", "K0GTF89TV0RI", "806GKA71ER3K", "FRHI5HEUA221", "52RQSUOLQY11", "9F16TMWX8CH3", "OOXXU2E2LT2Y", "E7WK7I28S9BX", "I0RF4DEVOBB6", "8KATVNB1POPT", "WCUZM581L537", "GD4T76B5ZFZE", "PYU5P4L39CGY", "GFJZQHHA8V83", "PDCS0QWCVDQ8", "6Y79YCIKZQ72", "ZF83I4KL56X5", "9H780RAAZZA4", "18HLP7SLPBDA", "ZQRAWJ81Q4GT", "9NYU2Z3SCA7S", "7K56OST8NMMJ", "J22YI4XT4YIH", "67T3S8IR1K8S", "1BPCUYA5P2RW", "I8RXH4M8TAYC", "9SH2FY3S5N26", "GPOKWMMTAP81", "YCJPJB0NBCC9", "LGM38H6E6V0R", "CYYMCN2C9QNY", "42ZMW6QT4A8X", "OLCY8GVG9YFX", "PO81RKALCUQS", "STXQGBPDV40S", "VEPPQ7NNMJLV", "QDUNVTR5LT3K", "BJKRDYYEKLLF", "Z1442EPWIHNP", "UXL5GR8M9E3X", "8ODSADPN90Q9", "5QGJE1YA8S7I", "E9O05I1RG7FN", "RLZLUHXXY3UT", "1G8KVH4IYO13", "FCUY5HFY8XKR", "QW1RL50WYJXN", "0FNGSEME37GE", "6C5NLD2UTODX", "3AYZ8S0HBB5N", "MB7NF8PO5NV6", "P8WPOO7D1IF6", "A6OY5EEZ7LHR", "F9KKFY09ZO4L", "1F3FHF5CZNGA", "TYPZDV68APO1", "T99JPVGQ7M92", "JO052WGV1CSH", "5E7828SSYMFM", "BLWUOKPHGWIY", "MSG48IOEE49M", "N4CTN72FFDEP", "JA4N2DVWVQG6", "87XJAOU354A0", "85HZKFXNT7BH", "NDKEXUBB3TV4", "JNWW8SU5SZY2", "31XT530YQC5I", "MGBZE1919PZ9", "W3DHXTN1NJNO", "EL9KJXH7AQ35", "QIXQCRM06NS5", "LQA9G41Y6EZD", "MNX4V0DE0UDV", "0C79P1S81GJN", "P0HXRV7QWQN3", "Q7CFORA75DGA", "4TATFLZ64ONK", "MEK0SB4XTV9S", "2RQDZ2JC095R", "BDSVAZ6KA86M", "UH3FA79HNVDG", "70KZTSZV6QAN", "XXCM7M2TOCZS", "B2105WEZQ58R", "YOZKXGOTMB87", "W3HX37JF83ZJ", "TO9QNDGZPGPI", "A4VUL0OGHWQR", "8ZQAC651LADS"];
 
-/* ══════════════════════════════════════════════
-   CRYPTO — Compact AES-GCM
-   Format: Q:<base64url(salt[8]+iv[12]+ct)>
-   For a 12-char code: ct = 12+16 = 28 bytes
-   Total bytes = 8+12+28 = 48 → base64 = 64 chars
-   Full payload = "Q:" + 64 = 66 chars ✓
-══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   CRYPTO — HMAC-SHA256 truncado a 8 bytes
+   ─────────────────────────────────────────────────────────
+   Payload (15 chars exactos):
+     Q  +  base64url( index_BE[2] + HMAC(key, msg)[:8] )
+                      └── 2 bytes ──┘ └─── 8 bytes ───┘
+                       = 10 bytes total → 14 chars base64url
+                       + 1 prefix = 15 chars ✓
+
+   msg = "qrv1:" + index + ":" + code
+   Sin la clave es imposible generar o verificar el HMAC.
+═══════════════════════════════════════════════════════════ */
+
 function toB64url(buf){
   return btoa(String.fromCharCode(...new Uint8Array(buf)))
     .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 }
 function fromB64url(s){
-  s = s.replace(/-/g,'+').replace(/_/g,'/');
-  while(s.length%4) s+='=';
+  s=s.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length%4)s+='=';
   const bin=atob(s);
   const b=new Uint8Array(bin.length);
-  for(let i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i);
+  for(let i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);
   return b.buffer;
 }
 
-async function getKey(password, salt, bits){
+// Import raw key for HMAC-SHA256
+async function importHMACKey(password){
   const enc=new TextEncoder();
-  const km=await crypto.subtle.importKey('raw',enc.encode(password),{name:'PBKDF2'},false,['deriveKey']);
-  return crypto.subtle.deriveKey(
-    {name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},
-    km,{name:'AES-GCM',length:bits},false,['encrypt','decrypt']
-  );
+  return crypto.subtle.importKey('raw',enc.encode(password),{name:'HMAC',hash:'SHA-256'},false,['sign','verify']);
 }
 
-async function encrypt(plaintext, password, bits=256){
-  const enc  = new TextEncoder();
-  const salt = crypto.getRandomValues(new Uint8Array(8));   // 8 bytes
-  const iv   = crypto.getRandomValues(new Uint8Array(12));  // 12 bytes
-  const key  = await getKey(password, salt, bits);
-  const ct   = await crypto.subtle.encrypt({name:'AES-GCM',iv}, key, enc.encode(plaintext));
-  // Concatenate: salt(8) + iv(12) + ct  → single base64url blob
-  const blob = new Uint8Array(8+12+ct.byteLength);
-  blob.set(salt,0); blob.set(iv,8); blob.set(new Uint8Array(ct),20);
-  return 'Q:' + toB64url(blob.buffer);
+// Build message: "qrv1:<index>:<code>"
+function buildMsg(index, code){
+  return new TextEncoder().encode(`qrv1:${index}:${code}`);
 }
 
-async function decrypt(payload, password){
-  if(!payload.startsWith('Q:')) throw new Error('No es un QR de este sistema');
-  const blob = new Uint8Array(fromB64url(payload.slice(2)));
-  if(blob.length < 21) throw new Error('Payload muy corto');
-  const salt = blob.slice(0,8);
-  const iv   = blob.slice(8,20);
-  const ct   = blob.slice(20);
-  for(const bits of [256,128]){
-    try{
-      const key = await getKey(password, salt, bits);
-      const pt  = await crypto.subtle.decrypt({name:'AES-GCM',iv}, key, ct);
-      return new TextDecoder().decode(pt);
-    }catch(e){ /* try next */ }
-  }
-  throw new Error('Clave incorrecta o QR alterado');
+// Sign one record → 15-char string
+async function signRecord(hmacKey, index, code){
+  const sig  = await crypto.subtle.sign('HMAC', hmacKey, buildMsg(index, code));
+  const mac8 = new Uint8Array(sig, 0, 8);          // first 8 bytes = 64 bits
+  const blob = new Uint8Array(10);
+  // encode index as 2-byte big-endian
+  blob[0] = (index >> 8) & 0xff;
+  blob[1] =  index       & 0xff;
+  blob.set(mac8, 2);
+  return 'Q' + toB64url(blob.buffer);              // 1 + 14 = 15 chars
+}
+
+// Verify: decode payload, recover index, recompute HMAC, compare
+async function verifyPayload(payload, password){
+  if(!payload.startsWith('Q') || payload.length!==15)
+    throw new Error('Formato inválido — debe ser exactamente 15 caracteres iniciando con Q');
+  const blob = new Uint8Array(fromB64url(payload.slice(1)));
+  if(blob.length!==10) throw new Error('Payload corrupto');
+  const index = (blob[0]<<8)|blob[1];
+  if(index>=codes.length) throw new Error(`Índice ${index} fuera de rango`);
+  const mac8stored = blob.slice(2,10);
+
+  const hmacKey = await importHMACKey(password);
+  const sig     = await crypto.subtle.sign('HMAC', hmacKey, buildMsg(index, codes[index]));
+  const mac8calc = new Uint8Array(sig, 0, 8);
+
+  // Constant-time comparison
+  let diff=0;
+  for(let i=0;i<8;i++) diff|=(mac8stored[i]^mac8calc[i]);
+  if(diff!==0) throw new Error('Firma inválida — clave incorrecta o QR falsificado');
+
+  return {code: codes[index], index};
+}
+
+/* ══ KEY CACHE ══ */
+let _cachedKey=null, _cachedPwd='';
+async function getKey(pwd){
+  if(pwd!==_cachedPwd){_cachedKey=await importHMACKey(pwd);_cachedPwd=pwd;}
+  return _cachedKey;
 }
 
 /* ══ KEY METER ══ */
 function evalKey(v){
-  const bar=document.getElementById('keyBar'), hint=document.getElementById('keyHint');
-  if(!v){bar.className='key-bar';hint.textContent='Mínimo 12 caracteres recomendado';hint.className='key-hint';return}
+  const bar=document.getElementById('keyBar'),hint=document.getElementById('keyHint');
+  if(!v){bar.className='key-bar';hint.textContent='Mínimo 8 caracteres recomendado';hint.className='key-hint';return}
   let s=0;
-  if(v.length>=8)s++; if(v.length>=14)s++;
+  if(v.length>=6)s++;if(v.length>=12)s++;
   if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++;
   if(/[0-9]/.test(v))s++;
   if(/[^A-Za-z0-9]/.test(v))s++;
-  if(s<=2){bar.className='key-bar w';hint.textContent='⚠ Débil — agrega mayúsculas y símbolos';hint.className='key-hint w'}
-  else if(s<=3){bar.className='key-bar m';hint.textContent='~ Media — puedes mejorarla';hint.className='key-hint m'}
+  if(s<=2){bar.className='key-bar w';hint.textContent='⚠ Débil';hint.className='key-hint w'}
+  else if(s<=3){bar.className='key-bar m';hint.textContent='~ Media';hint.className='key-hint m'}
   else{bar.className='key-bar s';hint.textContent='✓ Clave fuerte';hint.className='key-hint s'}
 }
-function toggleKey(){
-  const i=document.getElementById('secretKey');
-  i.type=i.type==='password'?'text':'password';
+function toggleKey(){const i=document.getElementById('secretKey');i.type=i.type==='password'?'text':'password'}
+
+/* ══ PREVIEW ══ */
+async function previewPayload(){
+  const pwd=document.getElementById('secretKey').value.trim();
+  if(!pwd){alert('Ingresa una clave primero');return}
+  const key=await getKey(pwd);
+  const sample=await signRecord(key,0,codes[0]);
+  const wrap=document.getElementById('payloadPreview');
+  document.getElementById('pillText').textContent=sample;
+  document.getElementById('pillLen').textContent=sample.length+' chars';
+  wrap.style.display='flex';
 }
 
 /* ══ BUILD CARDS ══ */
 function buildCards(){
   const grid=document.getElementById('grid');
   codes.forEach((code,i)=>{
-    const last4 = code.slice(-4);
-    const card=document.createElement('div');
-    card.className='card'; card.id='card_'+i;
-    card.innerHTML=`
+    const last4=code.slice(-4);
+    const c=document.createElement('div');
+    c.className='card';c.id='card_'+i;
+    c.innerHTML=`
       <div class="qr-wrap empty" id="qr_${i}"></div>
-      <div class="last4" id="l4_${i}">${last4}</div>
-      <div class="enc-badge" id="badge_${i}">sin cifrar</div>
+      <div class="last4">${last4}</div>
+      <div class="enc-badge" id="badge_${i}">sin firmar</div>
       <div class="num">#${i+1}</div>`;
-    grid.appendChild(card);
+    grid.appendChild(c);
   });
   const obs=new IntersectionObserver(entries=>{
     entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}});
@@ -344,14 +369,14 @@ function buildCards(){
 
 /* ══ GENERATE ══ */
 async function startGenerate(){
-  const password=document.getElementById('secretKey').value.trim();
-  if(!password){alert('⚠ Ingresa una clave secreta.');return}
-  if(password.length<4){alert('⚠ Clave muy corta.');return}
-  const bits=parseInt(document.getElementById('algoSel').value);
+  const pwd=document.getElementById('secretKey').value.trim();
+  if(!pwd){alert('⚠ Ingresa una clave secreta.');return}
   const btn=document.getElementById('btnGen');
-  btn.disabled=true; btn.textContent='Procesando…';
+  btn.disabled=true;btn.textContent='Procesando…';
   document.getElementById('progress-wrap').classList.add('visible');
-  const total=codes.length; let i=0;
+
+  const hmacKey=await getKey(pwd);
+  const total=codes.length;let i=0;
 
   async function next(){
     if(i>=total){
@@ -360,29 +385,29 @@ async function startGenerate(){
       document.getElementById('prog-label').textContent='COMPLETADO';
       document.getElementById('prog-done').classList.add('show');
       document.getElementById('s-gen').textContent=total.toLocaleString();
-      btn.textContent='✓ Generados'; return;
+      btn.textContent='✓ Generados';return;
     }
-    const end=Math.min(i+12,total);
+    const end=Math.min(i+20,total);
     await Promise.all(Array.from({length:end-i},(_,k)=>(async(idx)=>{
-      const enc=await encrypt(codes[idx],password,bits);
+      const payload=await signRecord(hmacKey,idx,codes[idx]);
       const el=document.getElementById('qr_'+idx);
-      if(el){ el.classList.remove('empty'); el.innerHTML='';
-        new QRCode(el,{text:enc,width:150,height:150,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M}); }
-      document.getElementById('badge_'+idx).textContent='🔒 cifrado';
+      if(el){el.classList.remove('empty');el.innerHTML='';
+        new QRCode(el,{text:payload,width:150,height:150,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});}
+      document.getElementById('badge_'+idx).textContent='🔒 firmado';
       document.getElementById('card_'+idx).classList.add('encrypted');
     })(i+k)));
     i=end;
     const pct=((i/total)*100).toFixed(1);
     document.getElementById('prog-fill').style.width=pct+'%';
     document.getElementById('prog-pct').textContent=pct+'%';
-    document.getElementById('prog-label').textContent='ENCRIPTANDO  '+i+' / '+total;
+    document.getElementById('prog-label').textContent='FIRMANDO  '+i+' / '+total;
     document.getElementById('s-gen').textContent=i.toLocaleString();
     setTimeout(next,0);
   }
   next();
 }
 
-/* ══ VERIFY ══ */
+/* ══ VERIFY MODAL ══ */
 function openVerify(){document.getElementById('verifyModal').classList.add('open')}
 function closeVerify(){
   document.getElementById('verifyModal').classList.remove('open');
@@ -390,14 +415,17 @@ function closeVerify(){
   document.getElementById('qrContent').value='';
 }
 async function verifyQR(){
-  const payload=document.getElementById('qrContent').value.trim();
+  const payload=document.getElementById('qrContent').value.trim().toUpperCase().replace(/[^A-Z0-9\-_]/g,'');
   const pass=document.getElementById('verifyKey').value;
   const box=document.getElementById('verifyResult');
-  if(!payload||!pass){box.className='result-box fail';box.textContent='⚠ Ingresa el QR y la clave.';return}
+  // restore original case from raw input
+  const raw=document.getElementById('qrContent').value.trim();
+  if(!raw||!pass){box.className='result-box fail';box.textContent='⚠ Ingresa el QR y la clave.';return}
+  box.className='result-box ok';box.innerHTML='⟳ Verificando…';
   try{
-    const orig=await decrypt(payload,pass);
+    const {code,index}=await verifyPayload(raw,pass);
     box.className='result-box ok';
-    box.innerHTML=`<span class="orig">✓ QR VÁLIDO Y AUTÉNTICO</span>Código: <strong>${orig}</strong><br>Últimos 4: <strong>${orig.slice(-4)}</strong><br>Autenticidad: VERIFICADA`;
+    box.innerHTML=`<span class="orig">✓ QR AUTÉNTICO Y VÁLIDO</span>Código: <strong>${code}</strong><br>Últimos 4: <strong>${code.slice(-4)}</strong><br>Registro: <strong>#${index+1}</strong><br>Payload: <strong>${raw}</strong> (${raw.length} chars)`;
   }catch(e){
     box.className='result-box fail';
     box.innerHTML=`<span class="orig">✗ VERIFICACIÓN FALLIDA</span>${e.message}`;
