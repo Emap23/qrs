@@ -726,6 +726,47 @@ function tryJsQR(data, w, h){
   return null;
 }
 
+// Try detection on a canvas with rotations & small scale variations
+function detectQRFromCanvas(srcCanvas){
+  try{
+    const rotations = [0,90,180,270];
+    for(const rot of rotations){
+      // create temp canvas with appropriate size
+      const sw = srcCanvas.width, sh = srcCanvas.height;
+      const cv = document.createElement('canvas');
+      if(rot % 180 === 0){ cv.width = sw; cv.height = sh; }
+      else { cv.width = sh; cv.height = sw; }
+      const ctx = cv.getContext('2d');
+      // apply rotation
+      ctx.save();
+      if(rot===90){ ctx.translate(cv.width,0); ctx.rotate(Math.PI/2); }
+      else if(rot===180){ ctx.translate(cv.width,cv.height); ctx.rotate(Math.PI); }
+      else if(rot===270){ ctx.translate(0,cv.height); ctx.rotate(-Math.PI/2); }
+      ctx.drawImage(srcCanvas,0,0,srcCanvas.width,srcCanvas.height);
+      ctx.restore();
+
+      // try at original size and a smaller scale
+      const scales = [1.0, 0.6, 0.4];
+      for(const sc of scales){
+        const tw = Math.max(64, Math.round(cv.width*sc));
+        const th = Math.max(64, Math.round(cv.height*sc));
+        const tcv = document.createElement('canvas'); tcv.width = tw; tcv.height = th;
+        const tctx = tcv.getContext('2d');
+        tctx.drawImage(cv, 0, 0, cv.width, cv.height, 0, 0, tw, th);
+        try{
+          const id = tctx.getImageData(0,0,tw,th);
+          const p = tryJsQR(id.data, tw, th);
+          if(p){
+            // attach canvas used for detection (scaled/rotated)
+            return {data: p.data, location: p.location, canvas: tcv};
+          }
+        }catch(e){ /* continue */ }
+      }
+    }
+  }catch(e){ console.debug('detectQRFromCanvas error', e); }
+  return null;
+}
+
 // ── Escanear una página PDF → payloads Set ──────────
 async function scanPDFPage(page, cv, ctx){
   for(const scale of [2.5, 2.0, 1.5]){
@@ -795,6 +836,9 @@ function scanImageFile(file){
             if(id && id.data && id.data.length > 0){
               const pObj = tryJsQR(id.data, sw, sh);
               if(pObj){ console.debug('scanImageFile: found', file.name, pObj.data); resolve({data:pObj.data, location:pObj.location, canvas:cv}); return; }
+              // try more robust detection on the canvas (rotations/scales)
+              const robust = detectQRFromCanvas(cv);
+              if(robust){ console.debug('scanImageFile: robust found', file.name, robust.data); resolve({data:robust.data, location:robust.location, canvas:robust.canvas}); return; }
             }
           }catch(ex){}
         }
