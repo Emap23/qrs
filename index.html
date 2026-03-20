@@ -720,7 +720,9 @@ function tryJsQR(data, w, h){
   try{
     const r = jsQR(data, w, h, {inversionAttempts:'attemptBoth'});
     if(r && r.data && r.data[0]==='Q' && r.data.length===15) return {data:r.data, location:r.location};
-  }catch(e){}
+    // sometimes jsQR returns strings without exact length; try loose match
+    if(r && r.data && typeof r.data==='string' && r.data[0]==='Q'){ return {data:r.data, location:r.location}; }
+  }catch(e){ console.debug('tryJsQR error', e); }
   return null;
 }
 
@@ -754,9 +756,14 @@ async function scanPDFPage(page, cv, ctx){
       }
       await Y();
     }
-    if(found.size>0) return found;
+    if(found.size>0){
+      const arr = Array.from(found);
+      console.debug('scanPDFPage: found', arr.map(x=> (typeof x==='string'?x:x.data) ));
+      return arr;
+    }
   }
-  return new Set();
+  console.debug('scanPDFPage: none found on page');
+  return [];
 }
 
 
@@ -787,7 +794,7 @@ function scanImageFile(file){
             const id = ctx.getImageData(0, 0, sw, sh);
             if(id && id.data && id.data.length > 0){
               const pObj = tryJsQR(id.data, sw, sh);
-              if(pObj){ resolve({data:pObj.data, location:pObj.location, canvas:cv}); return; }
+              if(pObj){ console.debug('scanImageFile: found', file.name, pObj.data); resolve({data:pObj.data, location:pObj.location, canvas:cv}); return; }
             }
           }catch(ex){}
         }
@@ -835,6 +842,7 @@ async function startDecrypt(){
   decResults=[];
 
   let found=0,valid=0,invalid=0;
+  console.debug('startDecrypt: decPdfFile, decImgFiles length', !!decPdfFile, decImgFiles.length);
 
   if(decPdfFile){
     /* ─── MODO PDF ────────────────────────────────── */
