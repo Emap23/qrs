@@ -726,6 +726,43 @@ function tryJsQR(data, w, h){
   return null;
 }
 
+// Try BarcodeDetector (native) then jsQR fallback
+async function detectBarcodeOnCanvas(canvas){
+  // try native API first (faster & more reliable on many browsers)
+  try{
+    if(window.BarcodeDetector){
+      const detector = new BarcodeDetector({formats:['qr_code']});
+      const results = await detector.detect(canvas);
+      if(results && results.length>0){
+        // return first unique rawValue
+        const r = results[0];
+        return {data: String(r.rawValue), location: r.boundingBox ? {
+          topLeftCorner: {x: r.boundingBox.x, y: r.boundingBox.y},
+          topRightCorner: {x: r.boundingBox.x + r.boundingBox.width, y: r.boundingBox.y},
+          bottomRightCorner: {x: r.boundingBox.x + r.boundingBox.width, y: r.boundingBox.y + r.boundingBox.height},
+          bottomLeftCorner: {x: r.boundingBox.x, y: r.boundingBox.y + r.boundingBox.height}
+        } : null, canvas };
+      }
+    }
+  }catch(e){ console.debug('BarcodeDetector failed', e); }
+
+  // fallback: try jsQR on the canvas' imageData
+  try{
+    const ctx = canvas.getContext('2d');
+    const id = ctx.getImageData(0,0,canvas.width, canvas.height);
+    const p = tryJsQR(id.data, canvas.width, canvas.height);
+    if(p) return {data:p.data, location:p.location, canvas};
+  }catch(e){/* ignore */}
+
+  // last resort: robust scan (rotations/scales)
+  try{
+    const robust = detectQRFromCanvas(canvas);
+    if(robust) return robust;
+  }catch(e){}
+
+  return null;
+}
+
 // Try detection on a canvas with rotations & small scale variations
 function detectQRFromCanvas(srcCanvas){
   try{
@@ -776,11 +813,11 @@ async function scanPDFPage(page, cv, ctx){
     catch(e){ continue; }
     const W=cv.width, H=cv.height;
     const found = new Set();
-    // Intento página completa
+    // Intento página completa usando detectBarcodeOnCanvas (BarcodeDetector or jsQR)
     try{
-      const r = tryJsQR(ctx.getImageData(0,0,W,H).data, W, H);
-      if(r) found.add(r);
-    }catch(e){}
+      const pageDetect = await detectBarcodeOnCanvas(cv);
+      if(pageDetect) found.add(pageDetect);
+    }catch(e){ console.debug('page full detect failed', e);} 
     // Grid 5×4
     const COLS=5, ROWS=4, PAD=0.15;
     const cW=W/COLS, cH=H/ROWS;
@@ -791,9 +828,12 @@ async function scanPDFPage(page, cv, ctx){
         const w=Math.min(W-x,Math.ceil(cW*(1+PAD*2)));
         const h=Math.min(H-y,Math.ceil(cH*(1+PAD*2)));
         try{
-          const p=tryJsQR(ctx.getImageData(x,y,w,h).data,w,h);
-          if(p) found.add(p);
-        }catch(e){}
+          // draw crop to temp canvas and run detection
+          const tcv = document.createElement('canvas'); tcv.width = w; tcv.height = h; const tctx = tcv.getContext('2d');
+          tctx.drawImage(cv, x, y, w, h, 0, 0, w, h);
+          const segDetect = await detectBarcodeOnCanvas(tcv);
+          if(segDetect) found.add(segDetect);
+        }catch(e){ console.debug('grid segment detect failed', e); }
       }
       await Y();
     }
@@ -898,11 +938,12 @@ async function startDecrypt(){
     const cv=document.getElementById('scanCanvas');
     const ctx=cv.getContext('2d',{willReadFrequently:true});
 
-    for(let pn=1;pn<=total;pn++){
+  for(let pn=1;pn<=total;pn++){
       updateDec(pn-1,total,`PDF · PÁGINA ${pn}/${total}  ·  ✓ válidos: ${valid}`);
       await Y();
       let page;try{page=await pdf.getPage(pn);}catch(e){continue}
       const payloadSet=await scanPDFPage(page,cv,ctx);
+      console.debug('page',pn,'payloadSet len',payloadSet.length);
     for(const pObj of payloadSet){
         const p = typeof pObj === 'string' ? pObj : (pObj.data || null);
         if(!p) continue;
@@ -948,6 +989,7 @@ async function startDecrypt(){
         `JPG ${String(i+1).padStart(4,'0')}/${total}  ·  ✓ ${valid}  ✗ ${invalid}  — ${f.name}`);
 
     const scanResult = await scanImageFile(f);
+    console.debug('scanResult for', f.name, scanResult && scanResult.data ? 'FOUND':'none');
       if(scanResult && scanResult.data){
         const payload = scanResult.data;
         // build thumbnail from the canvas used (scanResult.canvas)
