@@ -394,8 +394,8 @@
 
     <!-- RESULTADOS -->
     <div class="results-wrap" id="resultsWrap">
-      <div class="results-header">
-        <div class="results-title">📋 Resultados</div>
+    <div class="results-header">
+      <div class="results-title">📋 Resultados</div>
         <div class="rsumm-row">
           <span class="rsumm rsumm-total" id="r-total">0 total</span>
           <span class="rsumm rsumm-ok"    id="r-ok">0 válidos</span>
@@ -404,6 +404,7 @@
           <button class="btn btn-teal btn-csv" onclick="exportXLSX()">⬇ XLSX</button>
         </div>
       </div>
+      <div id="debugPanel" style="background:#021018;border:1px solid #013242;padding:8px;border-radius:6px;margin-top:10px;font-family:'Space Mono',monospace;font-size:12px;color:#7fd4a0;max-height:140px;overflow:auto;white-space:pre-wrap"></div>
       <div class="tbl-wrap">
         <table>
           <colgroup>
@@ -927,6 +928,7 @@ async function startDecrypt(){
 
   let found=0,valid=0,invalid=0;
   console.debug('startDecrypt: decPdfFile, decImgFiles length', !!decPdfFile, decImgFiles.length);
+  dbg('startDecrypt: decPdfFile='+!!decPdfFile+' decImgFiles='+decImgFiles.length);
 
   if(decPdfFile){
     /* ─── MODO PDF ────────────────────────────────── */
@@ -943,7 +945,7 @@ async function startDecrypt(){
       await Y();
       let page;try{page=await pdf.getPage(pn);}catch(e){continue}
       const payloadSet=await scanPDFPage(page,cv,ctx);
-      console.debug('page',pn,'payloadSet len',payloadSet.length);
+      dbg('page '+pn+' payloadSet len='+payloadSet.length);
     for(const pObj of payloadSet){
         const p = typeof pObj === 'string' ? pObj : (pObj.data || null);
         if(!p) continue;
@@ -989,7 +991,7 @@ async function startDecrypt(){
         `JPG ${String(i+1).padStart(4,'0')}/${total}  ·  ✓ ${valid}  ✗ ${invalid}  — ${f.name}`);
 
     const scanResult = await scanImageFile(f);
-    console.debug('scanResult for', f.name, scanResult && scanResult.data ? 'FOUND':'none');
+    dbg('scanResult for '+f.name+' -> '+(scanResult && scanResult.data ? 'FOUND' : 'none'));
       if(scanResult && scanResult.data){
         const payload = scanResult.data;
         // build thumbnail from the canvas used (scanResult.canvas)
@@ -1073,6 +1075,14 @@ function appendDecRow(row,n){
   // debug log
   try{console.debug('appendDecRow', {n:n, ok:row.ok, payload:row.payload, source:row.source});}catch(e){}
   if(n%10===0) tr.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+function dbg(msg){
+  try{ console.debug(msg); }catch(e){}
+  try{
+    const el=document.getElementById('debugPanel');
+    if(!el) return; el.textContent = msg + '\n' + el.textContent;
+  }catch(e){}
 }
 
 function exportCSV(autoName){
