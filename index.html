@@ -7,16 +7,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root{
       --bg:#080d14;--panel:#0f1c2e;--border:#1a3a5c;
       --cyan:#00e5ff;--cyan2:#00b4d8;--green:#39ff14;
       --amber:#ffb703;--red:#ff4466;--purple:#b060ff;
+      --teal:#00ffcc;
       --text:#c8d8e8;--text2:#6a8aaa;
       --card-bg:#0a1624;--card-brd:#153050;
       --glow-c:0 0 8px #00e5ff88,0 0 20px #00e5ff33;
       --glow-g:0 0 8px #39ff1488,0 0 20px #39ff1433;
       --glow-p:0 0 8px #b060ff88,0 0 20px #b060ff33;
+      --glow-t:0 0 8px #00ffcc88,0 0 20px #00ffcc33;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     ::-webkit-scrollbar{width:6px}
@@ -26,9 +31,9 @@
     #canvas-bg{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4}
     body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,.015) 2px,rgba(0,229,255,.015) 4px);pointer-events:none;z-index:1;animation:scanMove 8s linear infinite}
     @keyframes scanMove{from{background-position:0 0}to{background-position:0 400px}}
-    .wrapper{position:relative;z-index:2;max-width:1300px;margin:0 auto;padding:40px 28px 80px}
+    .wrapper{position:relative;z-index:2;max-width:1340px;margin:0 auto;padding:40px 28px 80px}
 
-    header{text-align:center;margin-bottom:36px;animation:fadeDown .8s ease both}
+    header{text-align:center;margin-bottom:32px;animation:fadeDown .8s ease both}
     @keyframes fadeDown{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:translateY(0)}}
     .logo-line{display:inline-flex;align-items:center;gap:14px;margin-bottom:10px}
     .logo-icon{width:44px;height:44px;border:2px solid var(--cyan);border-radius:6px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;padding:6px;box-shadow:var(--glow-c);animation:glow 2.4s ease-in-out infinite}
@@ -39,6 +44,15 @@
     .subtitle{font-size:.7rem;letter-spacing:.2em;color:var(--text2);margin-top:8px;text-transform:uppercase}
     .subtitle span{color:var(--cyan2)}
 
+    /* ── TABS ─────────────────────────────── */
+    .tabs{display:flex;gap:0;margin-bottom:28px;border-bottom:1px solid var(--border);animation:fadeDown .6s .05s ease both}
+    .tab{padding:11px 24px;font-family:'Space Mono',monospace;font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border:none;background:transparent;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s,background .2s;border-radius:4px 4px 0 0}
+    .tab:hover{color:var(--text);background:#0d1a28}
+    .tab.t-gen{}.tab.t-gen.active{color:var(--green);border-color:var(--green)}
+    .tab.t-dec{}.tab.t-dec.active{color:var(--teal);border-color:var(--teal)}
+    .tab-pane{display:none}.tab-pane.active{display:block}
+
+    /* ── ENC PANEL ────────────────────────── */
     .enc-panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:26px 30px;margin-bottom:28px;animation:fadeDown .8s .1s ease both;position:relative;overflow:hidden}
     .enc-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:scanH 3s linear infinite}
     @keyframes scanH{from{background-position:-200% 0}to{background-position:200% 0}}
@@ -46,8 +60,8 @@
     .enc-grid{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:end}
     @media(max-width:680px){.enc-grid{grid-template-columns:1fr}}
     .field label{display:block;font-size:.58rem;letter-spacing:.18em;color:var(--text2);text-transform:uppercase;margin-bottom:7px}
-    .field input{width:100%;background:#040a12;border:1px solid var(--border);border-radius:5px;padding:11px 14px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
-    .field input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px #00e5ff22}
+    .field input,.field select{width:100%;background:#040a12;border:1px solid var(--border);border-radius:5px;padding:11px 14px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
+    .field input:focus,.field select:focus{border-color:var(--cyan);box-shadow:0 0 0 2px #00e5ff22}
     .field input[type=password]{letter-spacing:.15em}
     .key-bar{height:3px;border-radius:2px;margin-top:6px;background:#0f2035;transition:all .3s}
     .key-bar.w{background:var(--red);box-shadow:0 0 6px var(--red);width:33%}
@@ -62,46 +76,51 @@
     .size-badge .dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:blink 1.2s ease-in-out infinite;box-shadow:0 0 6px var(--green)}
     @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-    .controls{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:26px;animation:fadeDown .8s .25s ease both}
+    /* ── BUTTONS ──────────────────────────── */
+    .controls{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:26px}
     .btn{position:relative;padding:11px 26px;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;border:none;cursor:pointer;border-radius:5px;overflow:hidden;transition:transform .15s,box-shadow .15s}
     .btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1) 0%,transparent 60%)}
-    .btn:hover{transform:translateY(-2px)}
-    .btn:active{transform:translateY(0)}
+    .btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(0)}
     .btn-gen{background:linear-gradient(135deg,#00533d,#007a5a);color:var(--green);border:1px solid #00b47a44;box-shadow:0 0 14px #39ff1422}
     .btn-gen:hover{box-shadow:var(--glow-g)}
     .btn-print{background:linear-gradient(135deg,#003d5c,#005f8a);color:var(--cyan);border:1px solid #00e5ff22}
     .btn-print:hover{box-shadow:var(--glow-c)}
     .btn-verify{background:linear-gradient(135deg,#3d1a00,#6a3000);color:var(--amber);border:1px solid #ffb70322}
-    .btn-verify:hover{box-shadow:0 0 14px #ffb703aa,0 0 28px #ffb70344}
+    .btn-verify:hover{box-shadow:0 0 14px #ffb703aa}
     .btn-zip{background:linear-gradient(135deg,#2a0060,#5000b0);color:var(--purple);border:1px solid #b060ff33;box-shadow:0 0 14px #b060ff11}
     .btn-zip:hover{box-shadow:var(--glow-p)}
+    .btn-teal{background:linear-gradient(135deg,#004433,#007755);color:var(--teal);border:1px solid #00ffcc33;box-shadow:0 0 14px #00ffcc11}
+    .btn-teal:hover{box-shadow:var(--glow-t)}
     .btn-sm{padding:11px 16px}
     .btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
 
-    .prog-wrap{margin-bottom:26px;display:none;animation:fadeDown .4s ease both}
-    .prog-wrap.visible{display:block}
-    .prog-header{display:flex;justify-content:space-between;font-size:.63rem;letter-spacing:.12em;color:var(--text2);margin-bottom:8px}
+    /* ── PROGRESS ─────────────────────────── */
+    .prog-wrap{margin-bottom:20px;display:none}.prog-wrap.visible{display:block}
+    .prog-header{display:flex;justify-content:space-between;font-size:.62rem;letter-spacing:.12em;color:var(--text2);margin-bottom:7px}
     .prog-header .pct{font-weight:700}
-    .pct-gen{color:var(--cyan)} .pct-zip{color:var(--purple)}
+    .pct-gen{color:var(--cyan)}.pct-zip{color:var(--purple)}.pct-dec{color:var(--teal)}
     .prog-track{height:6px;background:#0f2035;border-radius:3px;border:1px solid var(--border);overflow:hidden}
-    .prog-fill-gen{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan2),var(--cyan));border-radius:3px;transition:width .1s linear;box-shadow:0 0 10px var(--cyan)}
-    .prog-fill-zip{height:100%;width:0%;background:linear-gradient(90deg,#8030cc,var(--purple));border-radius:3px;transition:width .1s linear;box-shadow:0 0 10px var(--purple)}
-    .prog-done{text-align:center;font-size:.68rem;letter-spacing:.14em;margin-top:10px;opacity:0;transition:opacity .5s}
+    .bar-gen{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan2),var(--cyan));border-radius:3px;transition:width .08s linear;box-shadow:0 0 8px var(--cyan)}
+    .bar-zip{height:100%;width:0%;background:linear-gradient(90deg,#8030cc,var(--purple));border-radius:3px;transition:width .08s linear;box-shadow:0 0 8px var(--purple)}
+    .bar-dec{height:100%;width:0%;background:linear-gradient(90deg,#00cc99,var(--teal));border-radius:3px;transition:width .08s linear;box-shadow:0 0 8px var(--teal)}
+    .prog-done{text-align:center;font-size:.67rem;letter-spacing:.13em;margin-top:8px;opacity:0;transition:opacity .5s}
     .prog-done.show{opacity:1}
-    .prog-done-gen{color:var(--green);text-shadow:0 0 8px var(--green)}
-    .prog-done-zip{color:var(--purple);text-shadow:0 0 8px var(--purple)}
+    .pdone-gen{color:var(--green);text-shadow:0 0 8px var(--green)}
+    .pdone-zip{color:var(--purple);text-shadow:0 0 8px var(--purple)}
+    .pdone-dec{color:var(--teal);text-shadow:0 0 8px var(--teal)}
 
-    .zip-info{background:#0a0520;border:1px solid #2a0060;border-radius:8px;padding:16px 20px;margin-bottom:26px;display:none;animation:fadeDown .4s ease both}
+    .zip-info{background:#0a0520;border:1px solid #2a0060;border-radius:8px;padding:14px 18px;margin-bottom:22px;display:none}
     .zip-info.visible{display:block}
-    .zip-info-title{font-family:'Orbitron',sans-serif;font-size:.7rem;letter-spacing:.18em;color:var(--purple);margin-bottom:10px}
-    .zip-info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
-    .zip-chip{background:#15003a;border:1px solid #3d0090;border-radius:4px;padding:7px 12px;font-size:.58rem;letter-spacing:.1em;color:#c090ff}
-    .zip-chip strong{color:var(--purple);display:block;font-size:.72rem}
+    .zip-info-title{font-family:'Orbitron',sans-serif;font-size:.68rem;letter-spacing:.18em;color:var(--purple);margin-bottom:8px}
+    .zip-info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
+    .zip-chip{background:#15003a;border:1px solid #3d0090;border-radius:4px;padding:6px 10px;font-size:.57rem;letter-spacing:.1em;color:#c090ff}
+    .zip-chip strong{color:var(--purple);display:block;font-size:.7rem}
 
-    .stats{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:28px;animation:fadeDown .8s .35s ease both}
-    .stat-chip{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:8px 18px;font-size:.6rem;letter-spacing:.14em;color:var(--text2);text-transform:uppercase}
-    .stat-chip strong{color:var(--cyan);font-size:.78rem;display:block;text-align:center}
+    .stats{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:26px}
+    .stat-chip{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:7px 16px;font-size:.58rem;letter-spacing:.14em;color:var(--text2);text-transform:uppercase}
+    .stat-chip strong{color:var(--cyan);font-size:.76rem;display:block;text-align:center}
 
+    /* ── QR GRID ──────────────────────────── */
     .grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-start}
     .card{width:148px;background:var(--card-bg);border:1px solid var(--card-brd);border-radius:6px;padding:7px 7px 9px;display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transform:translateY(14px) scale(.96);transition:border-color .25s,box-shadow .25s,transform .2s;cursor:default;position:relative}
     .card.visible{opacity:1;transform:translateY(0) scale(1)}
@@ -122,68 +141,91 @@
     .card.zipped .enc-badge{color:var(--purple);border-color:#4400aa}
     .card .num{font-size:.42rem;color:#1a3a5a}
 
+    /* ── DECRYPT PANEL ────────────────────── */
+    .dec-panel{background:var(--panel);border:1px solid #00ffcc22;border-radius:10px;padding:26px 30px;margin-bottom:28px;position:relative;overflow:hidden}
+    .dec-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);animation:scanH 3s linear infinite}
+    .dec-title{font-family:'Orbitron',sans-serif;font-size:.78rem;letter-spacing:.18em;color:var(--teal);text-transform:uppercase;margin-bottom:20px}
+
+    /* Upload zones side by side */
+    .upload-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+    @media(max-width:700px){.upload-row{grid-template-columns:1fr}}
+
+    .dropzone{border:2px dashed #00ffcc33;border-radius:8px;padding:28px 16px;text-align:center;cursor:pointer;transition:border-color .25s,background .25s;background:#020e0a;position:relative;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+    .dropzone:hover,.dropzone.drag{border-color:var(--teal);background:#041a12}
+    .dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .dz-icon{font-size:2rem;line-height:1}
+    .dz-title{font-size:.7rem;letter-spacing:.12em;color:var(--teal)}
+    .dz-sub{font-size:.56rem;letter-spacing:.08em;color:var(--text2);line-height:1.5}
+    .dz-chosen{font-size:.62rem;letter-spacing:.08em;color:var(--green);margin-top:4px;display:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+    .dec-key-row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:end;margin-bottom:20px}
+    @media(max-width:600px){.dec-key-row{grid-template-columns:1fr}}
+
+    .dec-hint{background:#04100e;border:1px solid #0d3020;border-radius:6px;padding:10px 14px;font-size:.58rem;letter-spacing:.08em;color:#4a8a6a;line-height:1.8}
+    .dec-hint b{color:var(--teal)}
+
+    /* ── RESULTS TABLE ────────────────────── */
+    .results-wrap{display:none;margin-top:24px}
+    .results-wrap.visible{display:block}
+    .results-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+    .results-title{font-family:'Orbitron',sans-serif;font-size:.7rem;letter-spacing:.18em;color:var(--teal)}
+    .rsumm-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .rsumm{font-size:.6rem;letter-spacing:.1em;padding:4px 12px;border-radius:3px;font-weight:700}
+    .rsumm-total{background:#0f1c2e;border:1px solid var(--border);color:var(--cyan)}
+    .rsumm-ok{background:#041a0e;border:1px solid #006630;color:var(--green)}
+    .rsumm-fail{background:#1a0408;border:1px solid #660022;color:var(--red)}
+    .btn-csv{padding:7px 16px;font-size:.6rem;letter-spacing:.1em}
+
+    .tbl-wrap{max-height:480px;overflow-y:auto;border:1px solid var(--border);border-radius:6px}
+    table{width:100%;border-collapse:collapse;font-size:.61rem}
+    thead{position:sticky;top:0;background:#08121e;z-index:2}
+    th{padding:9px 11px;text-align:left;letter-spacing:.11em;color:var(--text2);text-transform:uppercase;font-size:.57rem;border-bottom:1px solid var(--border)}
+    td{padding:8px 11px;border-bottom:1px solid #0d1f30;vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tr.row-ok{background:#020e06}tr.row-ok:hover{background:#041408}
+    tr.row-fail{background:#0e0204}tr.row-fail:hover{background:#160306}
+    .badge-ok{color:var(--green);font-size:.55rem;font-weight:700}
+    .badge-fail{color:var(--red);font-size:.55rem;font-weight:700}
+    .td-payload{
+      color:var(--amber);font-size:.62rem;letter-spacing:.06em;
+      font-family:'Space Mono',monospace;font-weight:700;
+    }
+    .td-enc-label{font-size:.5rem;color:var(--text2);display:block;letter-spacing:.1em;margin-bottom:2px}
+    .td-code{font-family:'Orbitron',sans-serif;font-size:.64rem;color:var(--cyan);letter-spacing:.08em}
+    .td-last4{font-family:'Orbitron',sans-serif;font-size:.7rem;color:var(--green);font-weight:700}
+    .td-err{color:var(--red);font-size:.56rem}
+    .td-src{color:var(--text2);font-size:.55rem;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+    /* ── MODAL ────────────────────────────── */
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,5,12,.88);backdrop-filter:blur(6px);z-index:100;align-items:center;justify-content:center}
     .modal-overlay.open{display:flex}
     .modal{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:34px;max-width:480px;width:92%;animation:modalIn .3s ease both;position:relative}
     @keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
     .modal h2{font-family:'Orbitron',sans-serif;font-size:.85rem;letter-spacing:.2em;color:var(--amber);margin-bottom:18px}
-    .modal .close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text2);font-size:1.1rem;cursor:pointer;transition:color .2s}
+    .modal .close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text2);font-size:1.1rem;cursor:pointer}
     .modal .close:hover{color:var(--cyan)}
     .mlabel{display:block;font-size:.58rem;letter-spacing:.16em;color:var(--text2);text-transform:uppercase;margin:14px 0 7px}
-    .minput{width:100%;background:#04090f;border:1px solid var(--border);border-radius:5px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:4px}
+    .minput{width:100%;background:#04090f;border:1px solid var(--border);border-radius:5px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--text);outline:none;margin-bottom:4px;transition:border-color .2s}
     .minput:focus{border-color:var(--amber)}
     .result-box{margin-top:16px;padding:14px;border-radius:6px;font-size:.68rem;letter-spacing:.1em;line-height:1.8;display:none}
     .result-box.ok{background:#041a0e;border:1px solid #006630;color:var(--green);display:block}
     .result-box.fail{background:#1a0408;border:1px solid #660022;color:var(--red);display:block}
     .result-box .orig{font-size:.82rem;font-weight:700;display:block;margin-bottom:6px}
 
-    /* ══════════════════════════════════════════
-       IMPRESIÓN — solo el QR, sin texto
-    ══════════════════════════════════════════ */
+    /* ── PRINT ────────────────────────────── */
     @media print{
       @page{size:A4 portrait;margin:8mm 6mm}
       canvas,#canvas-bg,body::after{display:none!important}
       body{background:#fff!important;color:#000}
-      header,.controls,.stats,.prog-wrap,.enc-panel,.modal-overlay,.zip-info{display:none!important}
+      header,.controls,.stats,.prog-wrap,.enc-panel,.modal-overlay,.zip-info,.tabs,.dec-panel,.results-wrap{display:none!important}
       .wrapper{padding:0;max-width:100%}
       .grid{gap:3mm}
-
-      .card{
-        width:40mm!important;
-        height:40mm!important;          /* misma altura que ancho — solo el QR */
-        background:#fff!important;
-        border:.3pt solid #ccc!important;
-        border-radius:0!important;
-        padding:1mm!important;
-        gap:0!important;
-        box-shadow:none!important;
-        transform:none!important;
-        opacity:1!important;
-        page-break-inside:avoid;
-        break-inside:avoid;
-        justify-content:center;
-      }
+      .card{width:40mm!important;height:40mm!important;background:#fff!important;border:.3pt solid #ccc!important;border-radius:0!important;padding:1mm!important;gap:0!important;box-shadow:none!important;transform:none!important;opacity:1!important;page-break-inside:avoid;break-inside:avoid;justify-content:center}
       .card::before,.card::after{display:none!important}
-
-      /* QR ocupa toda la tarjeta */
-      .card .qr-wrap{
-        width:38mm!important;
-        height:38mm!important;
-        background:#fff!important;
-      }
+      .card .qr-wrap{width:38mm!important;height:38mm!important;background:#fff!important}
       .card .qr-wrap.empty{background:#eee!important;animation:none!important}
-      .card .qr-wrap canvas,
-      .card .qr-wrap img{
-        width:38mm!important;
-        height:38mm!important;
-      }
-
-      /* Ocultar completamente etiquetas en PDF */
-      .card .last4,
-      .card .enc-badge,
-      .card .num{
-        display:none!important;
-      }
+      .card .qr-wrap canvas,.card .qr-wrap img{width:38mm!important;height:38mm!important}
+      .card .last4,.card .enc-badge,.card .num{display:none!important}
     }
   </style>
 </head>
@@ -201,106 +243,230 @@
       <h1>QR Secure Gen</h1>
     </div>
     <p class="subtitle">
-      <span>HMAC-SHA256</span> &nbsp;·&nbsp;
-      <span>1 000</span> registros &nbsp;·&nbsp;
-      <span>300 DPI · 472×472 px</span> &nbsp;·&nbsp; ZIP <span>por lotes</span>
+      <span>HMAC-SHA256</span> &nbsp;·&nbsp; <span>1 000</span> registros &nbsp;·&nbsp;
+      <span>300 DPI</span> &nbsp;·&nbsp; Desencriptado <span>masivo</span>
     </p>
   </header>
 
-  <div class="enc-panel">
-    <div class="enc-title">🔐 Configuración de encriptación</div>
-    <div class="enc-grid">
-      <div class="field">
-        <label>Clave secreta</label>
-        <input type="password" id="secretKey" placeholder="Tu clave privada…" oninput="evalKey(this.value)">
-        <div class="key-bar" id="keyBar"></div>
-        <div class="key-hint" id="keyHint">Mínimo 8 caracteres recomendado</div>
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab t-gen active" onclick="switchTab('gen',this)">🔒 Generar QR</button>
+    <button class="tab t-dec" onclick="switchTab('dec',this)">🔓 Desencriptar masivo</button>
+  </div>
+
+  <!-- ══ TAB GENERAR ══════════════════════════ -->
+  <div class="tab-pane active" id="pane-gen">
+    <div class="enc-panel">
+      <div class="enc-title">🔐 Configuración de encriptación</div>
+      <div class="enc-grid">
+        <div class="field">
+          <label>Clave secreta</label>
+          <input type="password" id="secretKey" placeholder="Tu clave privada…" oninput="evalKey(this.value)">
+          <div class="key-bar" id="keyBar"></div>
+          <div class="key-hint" id="keyHint">Mínimo 8 caracteres recomendado</div>
+        </div>
+        <div class="field"><label>&nbsp;</label><button class="btn btn-gen btn-sm" onclick="toggleKey()">👁 Ver</button></div>
+        <div class="field"><label>&nbsp;</label><button class="btn btn-verify btn-sm" onclick="previewPayload()">⚡ Preview</button></div>
       </div>
-      <div class="field">
-        <label>&nbsp;</label>
-        <button class="btn btn-gen btn-sm" onclick="toggleKey()">👁 Ver</button>
-      </div>
-      <div class="field">
-        <label>&nbsp;</label>
-        <button class="btn btn-verify btn-sm" onclick="previewPayload()">⚡ Preview</button>
+      <div class="enc-info">
+        <span class="tag">[ 15 CHARS · HMAC-SHA256 ]</span><br>
+        Formato: <code>Q + base64url(índice[2] + HMAC[:8])</code> = <strong>15 chars</strong><br>
+        ZIP: <code>QR_####_XXXX.jpg</code> · PDF imprime solo el QR sin etiquetas
+        <div class="size-badge"><span class="dot"></span>15 chars · QR v1 · JPG 300 DPI · 472×472 px</div>
       </div>
     </div>
-    <div class="enc-info">
-      <span class="tag">[ 15 CARACTERES · HMAC-SHA256 ]</span><br>
-      Formato: <code>Q + base64url(índice[2] + HMAC[:8])</code> = <strong>15 chars exactos</strong><br>
-      JPG en ZIP: <code>QR_####_XXXX.jpg</code> — PDF imprime solo el QR sin etiquetas
-      <div class="size-badge"><span class="dot"></span>15 chars · QR versión 1 · JPG 300 DPI · 472×472 px</div>
+
+    <div class="controls">
+      <button class="btn btn-gen" id="btnGen" onclick="startGenerate()">🔒 Firmar y Generar</button>
+      <button class="btn btn-zip" id="btnZip" onclick="startZip()" disabled>📦 Descargar ZIP</button>
+      <button class="btn btn-verify" onclick="openVerify()">🔍 Verificar uno</button>
+      <button class="btn btn-print" onclick="window.print()">⎙ Imprimir / PDF</button>
+    </div>
+
+    <div class="prog-wrap" id="prog-gen">
+      <div class="prog-header"><span id="gen-label">FIRMANDO…</span><span class="pct pct-gen" id="gen-pct">0%</span></div>
+      <div class="prog-track"><div class="bar-gen" id="gen-fill"></div></div>
+      <div class="prog-done pdone-gen" id="gen-done">✓ 1000 QR FIRMADOS</div>
+    </div>
+    <div class="prog-wrap" id="prog-zip">
+      <div class="prog-header"><span id="zip-label">EMPAQUETANDO…</span><span class="pct pct-zip" id="zip-pct">0%</span></div>
+      <div class="prog-track"><div class="bar-zip" id="zip-fill"></div></div>
+      <div class="prog-done pdone-zip" id="zip-done">✓ ZIP DESCARGADO</div>
+    </div>
+    <div class="zip-info" id="zip-info">
+      <div class="zip-info-title">📦 ZIP Info</div>
+      <div class="zip-info-grid">
+        <div class="zip-chip"><strong>1 000</strong>Archivos JPG</div>
+        <div class="zip-chip"><strong>472×472 px</strong>Resolución</div>
+        <div class="zip-chip"><strong>300 DPI</strong>Densidad</div>
+        <div class="zip-chip"><strong>QR_####_XXXX.jpg</strong>Nombre</div>
+        <div class="zip-chip"><strong>~15 MB</strong>Estimado</div>
+        <div class="zip-chip"><strong>JPEG Q=95</strong>Calidad</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat-chip"><strong id="s-total">1 000</strong>Registros</div>
+      <div class="stat-chip"><strong id="s-gen">0</strong>Firmados</div>
+      <div class="stat-chip"><strong id="s-zip">0</strong>En ZIP</div>
+      <div class="stat-chip"><strong>15 chars</strong>Payload</div>
+      <div class="stat-chip"><strong>300 DPI</strong>JPG</div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <!-- ══ TAB DESENCRIPTAR ═════════════════════ -->
+  <div class="tab-pane" id="pane-dec">
+    <div class="dec-panel">
+      <div class="dec-title">🔓 Desencriptado masivo</div>
+
+      <div class="upload-row">
+        <!-- PDF -->
+        <div>
+          <div class="field" style="margin-bottom:8px"><label>Opción 1 · PDF completo</label></div>
+          <div class="dropzone" id="dz-pdf"
+               ondragover="event.preventDefault();this.classList.add('drag')"
+               ondragleave="this.classList.remove('drag')"
+               ondrop="onDropPDF(event)">
+            <input type="file" accept="application/pdf" onchange="onFilePDF(event)">
+            <div class="dz-icon">📑</div>
+            <div class="dz-title">PDF con todos los QR</div>
+            <div class="dz-sub">Arrastra o haz clic<br>El PDF generado con ⎙ Imprimir</div>
+            <div class="dz-chosen" id="pdf-chosen"></div>
+          </div>
+        </div>
+        <!-- CARPETA / JPGs: dos botones para máxima compatibilidad -->
+        <div>
+          <div class="field" style="margin-bottom:8px"><label>Opción 2 · Archivos JPG</label></div>
+
+          <!-- A: carpeta entera (webkitdirectory) -->
+          <div class="dropzone" id="dz-folder"
+               ondragover="event.preventDefault();this.classList.add('drag')"
+               ondragleave="this.classList.remove('drag')"
+               ondrop="onDropFolder(event)"
+               style="margin-bottom:7px;min-height:90px;padding:14px 10px">
+            <input type="file" multiple webkitdirectory onchange="onFileFolder(event)">
+            <div class="dz-icon" style="font-size:1.5rem">📁</div>
+            <div class="dz-title" style="font-size:.63rem">Subir CARPETA completa</div>
+            <div class="dz-sub">Clic → entra a la carpeta → Subir</div>
+          </div>
+
+          <!-- B: selección múltiple individual (más confiable en Chrome) -->
+          <div class="dropzone" id="dz-files"
+               ondragover="event.preventDefault();this.classList.add('drag')"
+               ondragleave="this.classList.remove('drag')"
+               ondrop="onDropFolder(event)"
+               style="min-height:90px;padding:14px 10px">
+            <input type="file" multiple accept=".jpg,.jpeg,.png,.bmp"
+                   onchange="onFileFolder(event)">
+            <div class="dz-icon" style="font-size:1.5rem">🖼️</div>
+            <div class="dz-title" style="font-size:.63rem">Seleccionar archivos JPG</div>
+            <div class="dz-sub">Ctrl+A para seleccionar todos los JPG</div>
+          </div>
+
+          <div class="dz-chosen" id="folder-chosen" style="margin-top:6px;font-size:.6rem;color:var(--green);display:none;letter-spacing:.08em"></div>
+        </div>
+
+      <!-- Clave + botón -->
+      <div class="dec-key-row">
+        <div class="field">
+          <label>Clave secreta</label>
+          <input type="password" id="decKey" placeholder="La misma clave usada al generar…">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn btn-teal" id="btnDec" onclick="startDecrypt()" disabled>🔓 Desencriptar todo</button>
+        </div>
+      </div>
+
+      <div class="dec-hint">
+        <b>PDF:</b> Se escanean todas las páginas automáticamente (20 QR por página, ~50 páginas = 1000 QR).<br>
+        <b>Carpeta:</b> Se leen todos los archivos JPG de la carpeta y se escanea el QR de cada uno.<br>
+        Al terminar puedes exportar los resultados a <b>CSV</b>.
+      </div>
+
+      <!-- Progreso -->
+      <div class="prog-wrap" id="prog-dec" style="margin-top:18px;margin-bottom:0">
+        <div class="prog-header"><span id="dec-label">PROCESANDO…</span><span class="pct pct-dec" id="dec-pct">0%</span></div>
+        <div class="prog-track"><div class="bar-dec" id="dec-fill"></div></div>
+        <div class="prog-done pdone-dec" id="dec-done">✓ DESENCRIPTADO COMPLETO</div>
+      </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div class="results-wrap" id="resultsWrap">
+      <div class="results-header">
+        <div class="results-title">📋 Resultados</div>
+        <div class="rsumm-row">
+          <span class="rsumm rsumm-total" id="r-total">0 total</span>
+          <span class="rsumm rsumm-ok"    id="r-ok">0 válidos</span>
+          <span class="rsumm rsumm-fail"  id="r-fail">0 inválidos</span>
+          <button class="btn btn-teal btn-csv" onclick="exportCSV()">⬇ CSV</button>
+          <button class="btn btn-teal btn-csv" onclick="exportXLSX()">⬇ XLSX</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <colgroup>
+            <col style="width:40px">
+            <col style="width:80px">
+            <col style="width:160px">
+            <col style="width:155px">
+            <col style="width:70px">
+            <col style="width:55px">
+            <col>
+          </colgroup>
+          <thead>
+            <tr>
+          <th>#</th>
+          <th>Vista</th>
+          <th>Estado</th>
+              <th>🔒 Encriptado (payload QR)</th>
+              <th>🔓 Desencriptado (código)</th>
+              <th>Últ. 4</th>
+              <th>Reg.</th>
+          <th>Fuente</th>
+        </tr>
+      </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <div class="controls">
-    <button class="btn btn-gen" id="btnGen" onclick="startGenerate()">🔒 Firmar y Generar</button>
-    <button class="btn btn-zip" id="btnZip" onclick="startZip()" disabled>📦 Descargar ZIP</button>
-    <button class="btn btn-verify" onclick="openVerify()">🔍 Verificar QR</button>
-    <button class="btn btn-print" onclick="window.print()">⎙ Imprimir / PDF</button>
-  </div>
+</div><!-- /wrapper -->
 
-  <div class="prog-wrap" id="prog-gen">
-    <div class="prog-header">
-      <span id="gen-label">FIRMANDO…</span>
-      <span class="pct pct-gen" id="gen-pct">0%</span>
-    </div>
-    <div class="prog-track"><div class="prog-fill-gen" id="gen-fill"></div></div>
-    <div class="prog-done prog-done-gen" id="gen-done">✓ 1000 QR FIRMADOS — LISTO PARA DESCARGAR ZIP</div>
-  </div>
-
-  <div class="prog-wrap" id="prog-zip">
-    <div class="prog-header">
-      <span id="zip-label">GENERANDO JPG Y EMPAQUETANDO…</span>
-      <span class="pct pct-zip" id="zip-pct">0%</span>
-    </div>
-    <div class="prog-track"><div class="prog-fill-zip" id="zip-fill"></div></div>
-    <div class="prog-done prog-done-zip" id="zip-done">✓ ZIP LISTO — DESCARGANDO AHORA…</div>
-  </div>
-
-  <div class="zip-info" id="zip-info">
-    <div class="zip-info-title">📦 Información del ZIP</div>
-    <div class="zip-info-grid">
-      <div class="zip-chip"><strong>1 000</strong>Archivos JPG</div>
-      <div class="zip-chip"><strong>472 × 472 px</strong>Resolución</div>
-      <div class="zip-chip"><strong>300 DPI</strong>Densidad</div>
-      <div class="zip-chip"><strong>QR_####_XXXX.jpg</strong>Nombre de archivo</div>
-      <div class="zip-chip"><strong>~15 MB</strong>Tamaño estimado ZIP</div>
-      <div class="zip-chip"><strong>JPEG Q=95</strong>Calidad de imagen</div>
-    </div>
-  </div>
-
-  <div class="stats">
-    <div class="stat-chip"><strong id="s-total">1 000</strong>Registros</div>
-    <div class="stat-chip"><strong id="s-gen">0</strong>Firmados</div>
-    <div class="stat-chip"><strong id="s-zip">0</strong>En ZIP</div>
-    <div class="stat-chip"><strong>15 chars</strong>Payload</div>
-    <div class="stat-chip"><strong>300 DPI</strong>Resolución JPG</div>
-  </div>
-
-  <div class="grid" id="grid"></div>
-</div>
-
+<!-- VERIFY MODAL -->
 <div class="modal-overlay" id="verifyModal">
   <div class="modal">
     <button class="close" onclick="closeVerify()">✕</button>
     <h2>🔍 Verificar QR</h2>
     <span class="mlabel">Contenido escaneado (15 chars)</span>
-    <input type="text" class="minput" id="qrContent" placeholder="Ej: QAbCdEfGhIjKlMn" maxlength="20">
+    <input type="text" class="minput" id="qrContent" placeholder="QAbCdEfGhIjKlMn" maxlength="20">
     <span class="mlabel">Clave secreta</span>
-    <input type="password" class="minput" id="verifyKey" placeholder="La misma clave usada al generar…">
+    <input type="password" class="minput" id="verifyKey" placeholder="Tu clave privada…">
     <br><br>
     <button class="btn btn-gen" onclick="verifyQR()" style="width:100%">Verificar autenticidad</button>
     <div class="result-box" id="verifyResult"></div>
   </div>
 </div>
 
-<canvas id="exportCanvas" style="display:none" width="520" height="520"></canvas>
+<canvas id="exportCanvas" style="display:none"></canvas>
+<canvas id="scanCanvas"   style="display:none"></canvas>
 
 <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = ''; // disabled — funciona en localhost sin CORS
+
 const codes = ["LLZKA6SJO31G", "66OI9QV8BA97", "VZBPRD1LWUOZ", "VVXR6QZZ7OOF", "VPGZRGER2HJQ", "9KWN38TY07Q0", "SFQJ33FICZS6", "HKL53FQICRF6", "5KRXSW5HCHB9", "PKKTGCFSSVP5", "F2CI58VJG31N", "Q3PYZ9TSHRET", "13ND1T50M1S9", "A3U7EGCR4E4U", "AMHD8POIEPZ8", "UK7BTEQWK1IN", "EF692TSQ7H9X", "COM704ADVWFB", "5XEQPUC3LAJQ", "O5NIV4M4T75A", "7LSD5TV567VJ", "88RTC7C3QSRB", "2TKXLTD2K5LS", "RWNIEL8421F2", "LONWRSQT2CPP", "2J2I2W9KRLL5", "SATRSF9THZMC", "YGTEEN0SICDJ", "MYF9PEBPUEAB", "U7GD0F7JWJX7", "LQ8N3CIGVFLS", "CCQNZWUCQUBI", "FWRG13RXA0Y1", "Q7826CEAA63E", "G45O039WZHNF", "UQ5LIIMRNT6Z", "ZDHIQXZUPLJZ", "AWPHBQMYGRRX", "NRZ5EDO758X1", "S5XP14FQX2OR", "1N7V9K5JS85L", "NHQJ3UQMCL35", "79KJ7XTS0K91", "N4GB67NNCNKN", "44GNGXUDKHMZ", "D6B0JH3I5I37", "UNILA68AR3JB", "T5T86639UOGG", "Z5QANBTMCM4V", "464U12HLDLM5", "O9VQF2CRARXO", "BGA7VBYVS0W1", "9AXSG6W7352I", "1YUDO196ZTJ1", "R12LRCSKYX64", "GM0ZWF96MROC", "EYYWZQKRZMCW", "RWAELKVLW3IK", "3AXCHGOD1JGV", "TFRE8N6PUMVF", "16SRGHOIZ3LG", "S474T4WV4Q5F", "SPBRWFFGWM4H", "ELHPROBZK6I3", "CUF3YH6VUZHL", "PD1K3UUMSEP5", "5K3J9SSA71UC", "0C96JXYN9LC7", "S8S7Z5VNWCV4", "X17KEEW7TC51", "Z73667YSH1O8", "YFOIJ5FODMJM", "H86H3P7KYH36", "O9B9GVJ2INT5", "MQ4YFYWZV4UA", "93UVUS5L5WCP", "6H5PNDH5MJ6C", "E7YCK7YBAH30", "L9SCAL76KQPR", "31R600TFSCOM", "IVSUUI3XDNPO", "XRF8QIFZW92J", "1W2034HX25TI", "W4EXJ6B5IYTS", "E3C0460Q2UZ3", "00E6A0LJWZGF", "T3HSR7M3MXL4", "16GCM9FP3L72", "YLBCEKISCQQY", "6FN95N51LF1J", "MGN7SIB9Q1TA", "DBP6EWSP7HMC", "1BT192AIZ59K", "PRTN78W18QKX", "4GQOKZV9ZHWG", "PG6GTUNTRQKX", "C10G097SADHG", "JCKZUU52E8ZU", "C7IBXSFQ55VB", "HN0831JDLO7T", "V3CXMBVYS6EH", "6ZPHMNRBBP65", "OBTO9E8DRNKD", "6ERJQ5IVCEF5", "3QQ5L06G70RJ", "G0MHQV4U3Z40", "RYYRQ6R0IJH0", "67MGGTL7WCYH", "SHAX79FGED58", "Q04G9IMBACOT", "SYOJCO9OGTDM", "D2ODVP4JDBUJ", "1AOXYINR3112", "T5CV3J65OUPG", "BOWE1644TQRX", "HAQ5K06PNY3E", "BNGQPW1VZSIH", "EIDALWRXO2U2", "54VP9V6EENZK", "Z8G0EKYSDFUJ", "NUZCFVNBAOMO", "H85GX4TYPFBS", "4N46SV6UQYJH", "WS4EKAYP9KU0", "D7SPC7XJH7L3", "8QXR66MBAOPG", "3BY1AWV5JR8U", "SHP4417MIHX6", "TZCUA6FI2CUG", "R77XKLODKTX9", "BSEM30OSTY72", "O27O3GOG5RZO", "VT06PA1CQQQ7", "4FNZLOFH6DUO", "AADCMOL2RWM1", "0U6U5RELCTVH", "YA8QFH5SN6SW", "GJUFLU1HCY5W", "RJIGVOVAWOAO", "VT2YI8ZLADQD", "9C1PBBDUL0AL", "DHDC2051V3F2", "4G0JIFVRG91Z", "DJ0UE3S3BOLV", "YBP9Z9FCCYOC", "8M5L3BF0HTB7", "87JU9A17MNSX", "FP8BKSTB0QMC", "K9SNCVSSPNBO", "DWA1D44JXIKS", "NCPUJ0NZ0IBK", "XJI0EOAE7PVQ", "GQFIOLG1GPUP", "B343D5NQPJAX", "X9583QT50VUS", "YGLQBA08YGG3", "O3XPRKE6TLFS", "UFOORYZ9C860", "ZMBR0XLZBSJP", "96Y4ZKVGQSTX", "K2A8ELQE5KST", "4FXW6YA943F5", "PX6OOA5D1VW7", "RK7Q4H2LZF9S", "2RQGTK7X729W", "ZPBTDT2YO1GQ", "F61AKDV4CG0U", "NQ5G6E2HZ2CK", "NLU5UNQRY2ZD", "D26QFMYY3YEE", "RM6AGYO24466", "2C3K4BXJ9V08", "XIDS4536HJ06", "P217N3OPZAX9", "WJ6EVAKH3LEF", "E90H85OBP3CU", "LJ7SD9VZCTF7", "6KPX1H8K27IU", "VNSUEN4KVUVA", "A455IK3EMW6U", "DXKYTTV4PCEY", "5FF0T5SKWS5G", "KMUJPUYD6C0Z", "L3JLU84H2GTF", "JWCL88DTV0BD", "EKQ5QROQ0A0Y", "C2DUAP19H6R6", "OSUPTRLKD6WA", "S20XARABGJY6", "ZBE70QKN4CUG", "KV1LJGK4BKP2", "FF1EJYEQ0AAI", "4YOA705U328M", "LHA0N14GGOT3", "9SGASPGDWJFU", "K1GN6P0E27B6", "415WI2OXQINA", "GZE577LGGFON", "9IINMY8LOSW2", "N26NJOI75ZT3", "LKTOSTZTC9Y0", "A6FU4WOIX23N", "FBACCHBNKURU", "4WL0BQT0E28N", "DWZEGBQW9G45", "0TZYRA7F8UFL", "PEIM2XSXVOBS", "OD79U12UYM29", "X7FIGG8LOHNY", "U812RP8Z8W79", "CRJLLFLKCBJU", "TJ4CTGL4XOCC", "2SM1FSFIX89L", "EN4GANB42T6X", "BQQX4RPQ15LM", "35IN3UJAF5UH", "BKD7E80XKJAK", "4JNNGZJL50EF", "AUU5ZEVLYLAY", "BJRI7ZEKICBT", "OBEPSHMFW805", "FIRWOVN1W355", "R0KPH9Q4L6VW", "GR40NRAW4GNN", "DAB4MQH9EHUA", "9EKPV1U9SE93", "2403277JP6NO", "665DBWB65RBS", "BP8HLG7Q6GXN", "ALDQMAQ1IOKM", "P7LNHGWJC4VJ", "I03P15QSR4EW", "W235FLPG7KD9", "7XRNMSW2CWEK", "STT0JG1C2JWE", "HI495MEYN002", "QQYF0WZY4NMI", "89VF6L91BVT5", "CC61I7CXQSJ1", "H3A6IBS69DKV", "F9AHE13TA4DL", "KZTTDRDBSJEU", "X832I2OUSU0H", "CXX0MD8RZ3D3", "RD63VY3IS5XZ", "O5W9E77O5CRC", "QYNU2F4YL1ZI", "TKU231APM0XX", "JMIQOQYEUZA8", "WX05FJLMUPI4", "0B8QUUH46PJ7", "LFSVUOG6PF94", "XLGGCPK3BHLE", "WEPQSNLDXU5L", "6MN5ZM0E9DFB", "CHLBH282YJYX", "7UOK2WC28KTV", "POCR28KO32WQ", "98Y8C5K8P186", "44GSXI2MYN70", "QES2T3WN4RRD", "8VEUU23HWCHX", "PDF1MP97BEIO", "T8IX20WS9ORS", "K1A7KMBUWNT3", "J93FKUTGRTF9", "SUYYMKH5WTI9", "AQCNPSAI6V3K", "55ODJKU93IQB", "VDI85XNLBCWW", "2ER7UNQCEPTK", "E82BJRR251LD", "UVPZJG23BWOK", "JU1SGZ7LR5O2", "G57KV5RT1GQO", "JKWTB4PV7JGL", "4TS63LDRNONL", "T4QUS2Q9T7MK", "M542ZIWJPJFZ", "C4KPKX9JX3R2", "8PEZRAF9M0X5", "OEVMRSIXGXKZ", "T6YJZ95IO6ZW", "ZQ3YAPBW24GI", "50OFW8VP4F5F", "7H4UWFD7KOQT", "1DABXAS48SX0", "CRON70IE2G73", "RBCBHG1CQ4KQ", "87A0WOLC2CNF", "UZ0P4N2N7W6S", "PJQOTVO2M36H", "5PUPL6IIGICG", "VHXMU4NCLXLR", "P9S6VYI8JBB6", "CJ4SMQDC2RNM", "Q2R7CPWG7KB8", "ZWC5T45AFB5D", "VQR00WLJIJGR", "6VG7SYZVR2C4", "Y17NY6J7ZN1A", "LCLY8KE2MXJR", "X2F84PM99ICL", "CMLXF4ZKY6Z7", "HDOXRAM90N4G", "K2RBM3RRPIBJ", "Z6RJ0Y5QS6A7", "8ZT6B68K2ME1", "L2DEVUNXOV97", "329V8DCLUBTF", "8GCUMRLH6TMA", "CFSYN6BCVV8B", "J8BE9QO2LQX4", "5N3POUFIDNCY", "XRH050UNJ2K5", "YPET1PJHFE7X", "2SP6BGZ91W7C", "7ERBIYD7G65E", "Y70G0QWFHAIG", "8F2Q3F8AP0XD", "Z7RM5KZA408A", "Z1LCSJIZEJB6", "D995CYZMDR83", "44DOBPSKG4SD", "JONQ989IIYBP", "G1LBJBCDBEXC", "NTC7E39S9599", "91YBSZVHLKP0", "7L16I1FHR6K1", "8HEGU1K0IXJX", "TUZ8P1DCNWJZ", "D81UB35QUQP7", "3PV9GSZU5I4R", "S2MY7EAXRTP2", "PEZ8D6PZUP1S", "Q86B5GKOK7S8", "0J676HS95YKH", "7891GNP4T6PR", "YNI850ZJQ5SH", "ND2XVHANNQXT", "WCWTT31MPQA5", "XBQGV8RR6NQ1", "0UP5SGYBV8GB", "2BACMZH9PX2T", "SN6D6JESJGZZ", "934W95DKE6R7", "3T4D88HRO0Y5", "V4KMQULDN8FN", "324ZXRJAVDWY", "TMUSWC3T4HOK", "5JZ6D8UYR4UH", "6NEXOHNKTG39", "KXNNU6A97XQN", "89Z2V9BLMBGA", "ATPXW2N3U7ST", "CASK3VR61LAF", "60ZKYM060EYH", "Y43USCO6O2YI", "F32XJ9JFZ7NA", "KJFUH2FONFR9", "MOSYYCCTCSW1", "HVA1QKE91HKT", "8BP54AKNOUTV", "47FY42QXCNC1", "S0PLWEON04WP", "RSY11BUFSIJE", "17P1UOKC0UZE", "VYIP82MUI8E8", "WJ4PZJTXLWLV", "HX8N43ZGAOTW", "BR4PBTOWB08D", "3QROMD060VRS", "U0TYDBYHF39C", "J9ZXM0NN0F8G", "X4G8CUFTTYM1", "H3H0KZU8SVDW", "KEPOO1UGWSZM", "BZ9CX6HC5ZU4", "0SY6NM7GUHTK", "LLG8N3T0R29V", "Y990YB3R55AM", "PG7ZL9GUQF77", "4X2TQGVH7ZJJ", "P9RCP4ILIYGY", "QXGG3URWKFF4", "2RRMX8AX91UT", "OHIHCRQRO86H", "LP8IHSNQQLBY", "N7CNC20H6OH7", "73X12UX1VX79", "F6TU6RJ3AZC1", "N2POBCTDRYUC", "ID8LQALY9U99", "9794U9IQQARY", "MKF27VFNDYJI", "GGU6T5V4G3RZ", "V9BEBSZLDA6N", "2W3P6Y6NXHPZ", "U8DCURMDKIYZ", "7J9VPJK094NP", "UE71SH7OPG44", "7FEFMBOXPDVM", "QGYCFSX3JETN", "P2XGH8HIPKVR", "DMVZLE6F12O5", "RQBRGRCUSILO", "DR46HE9SOBL6", "MNWNY66LHAT2", "CPYRMI4CE6MK", "E9PMRTGG72WZ", "O8F3SXW27UPG", "YHFYYIZJ0FFE", "PREULJULZ8H5", "J57LWP632KQK", "HE0Y0WPRDF5D", "HVO3GPLASGQV", "84RFNHPRSQ82", "DJYJ5YG908VE", "MBPEUL54QW1Z", "2SU3LZ00AE2M", "RFPBJBEU7J70", "2RVBSMLFV4SO", "K6CK15S5YM0A", "8UIKGXLNNZM7", "6B96NZ1MX08Z", "3SA869DIBGLI", "UPMX24OKO732", "OMOD9V9KVSMO", "BQCZKON4W3YO", "A34X5OBXKTBL", "SHKR0W65IHNT", "RGKUKHB984R3", "86JMUGXULIKL", "D3JYY5THSNO1", "LGYN1WHUV4M3", "BVEJIJXPG051", "DKGQPGR3NOYG", "XY30XCW78J8U", "D65OWD1ZRXJM", "TLSSNNKEO4EZ", "0KMXRFOBOT5G", "VGTT9UGOOJLY", "G7SBMOM800BV", "AHSLVFGBAWQ4", "CD27ALY4A2E5", "0KJ8K5ER87PF", "3B1JWN67YLDI", "O6YQJBNF79QV", "1RCAV5ZPJ250", "CV80XHY1DNU6", "K9HBLVQE8VKH", "BTTTEGYZ9WTR", "DV3N7EGB546T", "40KTZ9OMN3ZI", "XH7T5V4MY6F4", "KVZV07DIKPHT", "QS3SYU7A9FMB", "3XJLDDEUOIL8", "42L2JVP7O227", "OYSNP05K0UWQ", "JUE4Q1NGZYC1", "5KQ8KU3QIUW2", "HJ50S2SR5QOF", "ADW1MWFO9R8U", "P2MPRDCDNL49", "FN95RSD2SC47", "YZNHWZB7ZJFI", "55DM2ONGLJ0S", "WEJ6Y19Y667N", "O35RYME52XX2", "VO5BBU1AFB2K", "M1M3LEQ1XJXR", "ODUB4HDGO61G", "7WOLMN2JJR5W", "MT46PMT2A7EJ", "N8SBDT071HWX", "24A1HOM5JO32", "1XQLII8JNYGO", "5EFS21KJEF9C", "SCMIW8JGTZJQ", "X6UFIKGDI016", "0X686YP7R2RK", "HN8H1T59YYDN", "UQ85Z51ZV2SA", "UV6D2A2PJ6WK", "XW7MBIOXIY90", "N2D11IHJBF0H", "GUIEVYB8DQ9H", "5HE8QBU074GC", "LV6FDNY642QU", "7XWFSDQ2WZTL", "E979VWKU3U8L", "UG9M44L0YWP2", "P2A4JCH94TKZ", "ALLUHTSJG89P", "8C7QU8Z13YI3", "48GF97KXC7BW", "E12CVL3SP52B", "5P3UQ01C4B9N", "FQ28TSDGQ0NP", "H85Y1CIHEIU2", "C75N6T6M8XXM", "I84QJWUS6QDO", "Q93WTBYBNRC9", "F30FYOV1FCF8", "OMOUJFZN2CQV", "3SGV5L6XHYGX", "JL7MSIZEBNW0", "34R976KWO3P9", "S4XB03S1AIVU", "AVSDGQQP5PP1", "FNF81PHJSF3K", "2EN9T4ZZG3QT", "2FZ40D5NI39X", "KMPSJKYA5Q35", "NXOU9HCA2AJ3", "Y35VMZP4M824", "4ZYT3EQF141R", "CMQ0AAZJK0LF", "HFD8EF4CGPMB", "03TX3UA6EXBH", "8XUK7JU2EK3C", "F6MROQZTZF7X", "17JW6L0B7TPQ", "C59DD7IIZM5K", "6NZ0TUSJKKL4", "1MZP0Q5709NU", "BUS0KBE90K22", "A3O05UF6AEN6", "2LV0LWN8X2KN", "XIMG0G4FCV9U", "M3NKJ1GNOBE8", "HGZ7EBAI87VW", "RTS6YJJNELLF", "AGE5WWZWZWYJ", "MQPGC9V5HUFT", "1XX3TG3I6VZJ", "8R5TU7TL6ZTP", "HETJVG9HKZH1", "ME5KXAM7RD9H", "V8RZQK3J49S2", "2EIZP2CA18E3", "CZ2R11GFNV95", "1SRZP3T9XELU", "6VUG0LQ1K47U", "IMAVP4QI8O0A", "PLQJ3BIIRJ7K", "LJ5FZ58ZNDSC", "N3RLGXXI60OS", "GJI9RDUV1D6R", "GIC8NTSNSVO6", "XCAOU3DFFQ9Q", "VPHZOIB3AT8B", "SBNWWXC2KWDB", "KFZILOYD5Q0F", "V4BRHQUOPTTH", "CL536PL60XRK", "VQGY20F6GMD2", "NZV5XWWJRLT3", "XA4651RROZY3", "1CM37P9Z73P6", "C7TFVQ94PBO9", "GLD332VAVP5T", "OWA2UEZ0W5HE", "556KEVI9I47P", "MNCILL5B0K4M", "F8PYHRT6NIYA", "TLR1552QI7C7", "WHI4OBVP2V66", "ZT6059WQMQB7", "1828GJDSH05C", "E2X7M46YH15U", "Z0ISZIWQJ2BR", "N9ZTN7X21FXW", "3IOPUUZFSPG7", "N41CX3E7BOEA", "F2TD3OUG4VF8", "XG8M8MKVEWES", "4LZ10DRGX97U", "8W737DLN75E7", "7W549F2IH8Y3", "IYXT01HTUVYB", "5AYBKG3SS534", "P995BVGIBD4M", "F341OFPI7W4G", "IJH4NHPF14XO", "F9GCU989JW8E", "5XWKW5NN4436", "2PWHGWDUFN8Z", "Y9OPN8VIUKNR", "FG52OTQ0EDX7", "F2YF1YDP5UBG", "I995HCQ6A4UG", "T0V30W0L6RE2", "IISSOAPULKLH", "XMAVINOUCBE3", "U4XBR47NT57M", "IKAL21U97PXX", "IJMSWHNCNP6T", "IJL2LEZF9XD2", "0B4AJNBGLJQD", "R3R105OK5DMW", "EES7T6XKCE1B", "WD13VJJOTFIF", "PDL645HF3MU7", "03VOM1DA8MG7", "TDSEPS3MK581", "F7R4BX53E3D3", "IFM8EV8E9HJX", "PK8BQIX58ZFU", "QK1IQVT3AP3R", "O1HQD7FRK2IW", "U503H3224UFF", "JHULUQ45SGVY", "ARG2JPJG8JAH", "VESGUAOFINEI", "IBRBQFTXNOOU", "LLRZ6UWIJZ8A", "2IHLENZQ9LJO", "146U3P8LVH7H", "BPA0AA0KYXBL", "W5AYZLT3XAPC", "3M89RWYCTT2I", "2MMXJKP8T0AG", "M1SK6AE3MK92", "PY2QKW09XP1X", "VUVEO9Q7MGDE", "D8LA8J4TBGUM", "PZJ0WXB5GM2V", "UZQOLWZUE8RF", "9XG60C83TO5Y", "CXSKC2OZYQ45", "FSYMSDM93F8T", "OF7IFHGKOK89", "DJUX7FQOJ5WO", "JD2IDSKV51WC", "IOIZV6S9JMD1", "I0RAQXH77UNV", "M2VGTDF6HFQN", "M4GSTUHBUQG5", "EF9L1HPP0CXI", "HZZI7DZQ43WM", "9FJMX2WV0OJE", "5XXY1WQKMLFD", "11DPDWLTCNYK", "7NTY95WLLG94", "CII7EEK06VHZ", "9RSJYJ8QEVHZ", "M7TXH8707O0F", "0AS92TUCWXX9", "T33F0XIOQZOW", "RYNTQR0MHM7W", "YJF4FOL04099", "KZPXRUGV09TW", "T824R789ULK8", "E6LDCFY99IU4", "PWN3NOWZ1WU1", "CE8TSGGO4XQF", "8LAQL2R3CDJ5", "ODCNCOBYD971", "8JGAB2YQ83UC", "V12UA9KP5X57", "MAGBV1DYIWSA", "BHYEFE4AXMR9", "4XMM3AR6Q4YW", "TWA95WLTV56D", "O1VE2RN0N2L2", "W4I3BESPF1Q0", "RB762SRCZ7IS", "6G64RT2Q7AKO", "K9OKPXIBYQBI", "0PMI27P5SA7T", "0Q62HHKYCEGP", "SEJITTSXI320", "W0B9N50HRAPC", "VROBL6V7EI7T", "63FG5UQUVW9T", "PHJ5VZEWLDG7", "JDKERP6J2LO3", "IML63JXITX6H", "NNT99LCQC5ZJ", "3OLUF7NY3C0I", "T7GGT5RBJQSM", "DZ4WCIUBB8JG", "WUR8I4INLRIO", "RPQETWVZYYVB", "XM4ABW4J0REJ", "P2HIK06HX5H5", "A6ZC8S7ZDSBG", "E5WCGFOSMJCT", "I0EUC0AIJSVE", "FJELOPGY4B7N", "8ECUTYKQ7MLH", "OP4R3PBGW96C", "6I8KAFOF46J6", "TXILUR7ILRM4", "4ZDPKOOAU5ZO", "DWH9P5L22L8J", "PB053G8PZR2F", "7J8612UMCAIW", "BSYK74C51CS6", "6FFBRZEQ7V23", "OY2HUYHAF0IX", "4OH2ABY8GMXD", "5KLDNU3T9W5V", "XUF0SAEZY2M8", "6Y3L8CWPBV0G", "E8HGGFS1LV2L", "QF6BGQO39IMH", "G6ZNHMQGSZV0", "BAXRZ7USM58K", "I047Q2HP3CMZ", "XQZNGW8XCO19", "3GOY2YNL86VY", "KOGA8K5PN3KX", "F0XWYBTNX2UT", "7JYLTDMKG2HO", "KPS1ZRKOC80G", "IXS5QNHGGLK7", "R8FM1DGK422U", "YYUKUMSN0HLP", "2FOJE7OPU1N2", "QLWK00JRTAJI", "XE3MULFHBOTH", "K90Q4QX3Y4C6", "EFOEP1R34G3W", "805JIH58836L", "PLJMLL8VKV00", "WV6JYQOUQMKC", "NAIDVZNYS4EK", "1WLH5PO1BIN9", "EIVXPCG7UV6V", "0AXYG0ILO8PW", "DT5346QI0QNT", "SZM1NRQZ93G3", "ZLZMRW8B841A", "OXNOIR6I8RJD", "2OR646RKF7AB", "XQD59OTZ5OG4", "B22LK37U1MSA", "7W8OIAYY88JR", "F46UPIZVA4BN", "MM0T0LI4CD69", "GF5PUBY5O2KZ", "8VB0WXQ3T7OA", "QB2CNUSVYIAB", "FG0AMZ6I7D0E", "7FKNPXQ7PHHX", "1DSEC5LP1V2L", "G189BLYL6CGB", "1DLVJ1CJUO8H", "94GAZL264P88", "F0SNRRJV5MOP", "9YPAGVCQ4206", "29AGECE1P3IF", "CYMLVJLJ9607", "U2Q2H0WCP2PC", "VSX89V8HP2F1", "5J3BQWZWQYS4", "GH6CPBRDH3UA", "A7FZFHMVNMF2", "RN8UK3RSL80H", "NZ8589HFUBUE", "1ULQWR0U73BO", "5UEQVFP9GAJX", "796JNE3SSHMB", "14D8ZY4WZPGB", "RADQV2S3PU49", "LEC5AFDI4VIN", "3OU0L2AV8EAY", "1A7K5QZG8D89", "EMOFW2MPJF61", "RB4S9N2EAYN2", "EBRWG14YMA13", "5EHX7T9OYEP1", "C3OHPBU55A1Q", "WZGQWWX8ME9R", "MO61UDAFMRZN", "X6CFRFWASCY7", "U7V88XQJL24P", "FDZUWJUK0X5M", "DKSQLKOHXO05", "CKK53G5733ET", "3216LNZVYF7Z", "7UGIT330V001", "Q4I6MB9YEA8Q", "AYGK7D5923VD", "57H11OE1BNZU", "R4W8E2HMDNWH", "NTTJFMU9JKML", "OQLTQO7JJ8SM", "MM777PVCOV03", "BE1OLSLCXSVR", "4BW0QP9RM5X2", "24R7J2WTPU1M", "ZVKUTMLMGYI6", "6GB4S46D8EXB", "446RIATRQRS2", "07MH91K492O9", "VG87UUUQJDNK", "IHAWU9U6PQFI", "USINOVGAXVG7", "REVLD3OZKHVX", "UJA8MQ9POS3N", "NZ4HB89N99FK", "T6IBQ3ZKNG05", "4NRCTCHEVDJN", "BBQOPX12QR0A", "MP9C0HKHRHNI", "UYLDT538EXF2", "QXC35ZSQ3728", "27W06HN0AA6V", "3HI4VI0GI6MK", "2N86K0JTMPCA", "VY43L0S3KH82", "NVA8Y1TQWOQN", "ST3CF4K6KGAC", "Z9X6CAUY9VSG", "EM7SKN9D2M54", "HDSZR4SJ4XAW", "BG5GD63M13WS", "ZP42OCLDKQJM", "YZ28PC5QFVOZ", "UBCVQEB5IXRY", "P926IDY9FBPP", "E5OAOU24UUT9", "K7S4KS1DY41L", "LOFJM570U6N5", "1QK48BHKX5EO", "ON6SCN9ZHAPT", "WBP1HAJ0JCFG", "OKVEYSTEAYQV", "WUTVUATWZ7YR", "0104L9FAXF2Z", "FOUHYQZ6A4W6", "ZEE823R45MVW", "2HISJ2E8F8UG", "838O4SQYX023", "I7701SSHFHBL", "GFCVEOHHTD61", "M24T78MHFM6Z", "RV8XSGV567GM", "M29HWJY7L1I4", "HYHOCBKR9N23", "TRPUWSUATYYI", "TVRB0IDWBXHT", "MYDZDL784JT0", "PZDKANOD37DF", "8UFX1C35HIXY", "XHAVCJVTMBIF", "RVHY4QWAZSH2", "3H2BWCFV3KZC", "31B3QWTOAGUQ", "DTTCS3CI4ZWV", "F8EXE482UYBK", "G0KBVNMG155V", "9XOLWGR4LZOG", "8FF1IFLI4VGG", "WMW4EF0U4X81", "WQ4DP05DUPWK", "UQBFW05XTYY1", "VFQ4RVIHVT4T", "PLMFZYUGGVPD", "VFYW5OHH1RAC", "ZZKO5HTG62R9", "Q3D4SN3O32DS", "95WCAZAMVCCU", "8BGLHLYDNGZZ", "TNP5RU46SYJY", "5HYM0JRR89HZ", "HCDSK9NB0EFT", "0NB7RSVETN69", "54CKVTQZA1PU", "I1N1S056MBHO", "WN1LOT19RM9H", "XZ58UPED45KZ", "CJ7R6J896AXM", "SBEJXVUJK7HN", "7L0XU3EYN1CX", "UF6K1H7EOUY1", "PUDL3VT6FKAL", "P3SO7RAOFLMS", "IVBAMYWHXTWC", "AEDNN93LSSGO", "A1KWS08O2UMX", "IG1MJHSP68JV", "ZUF6H7AMZ79O", "0KECZIXCAE1M", "8YOUSBEL6SA8", "127E5MG95LGD", "7Z4BZDQDGV3M", "KDFFUWTFT0GD", "VQGVOQZ4EEBX", "CA7KEDHPNYEE", "3TFBDQ6YOWX9", "JWIZENQD7PJF", "Q42DDQPARD0P", "05MUFPKQIWEH", "SOP10RM6880D", "MK7BCPOMISJ5", "428PG2JLZDQK", "AR9UYVHS9EUF", "7H6RDMTRSDA2", "60Y7YQ3UDG51", "XSAS5NAAOGRK", "BLROW550EU5Y", "V5LIP316JWRX", "WXKTDU2YDKK0", "6167PS27SNJG", "UQHFRI0IZOY1", "QSZLE35KWUO2", "K0GTF89TV0RI", "806GKA71ER3K", "FRHI5HEUA221", "52RQSUOLQY11", "9F16TMWX8CH3", "OOXXU2E2LT2Y", "E7WK7I28S9BX", "I0RF4DEVOBB6", "8KATVNB1POPT", "WCUZM581L537", "GD4T76B5ZFZE", "PYU5P4L39CGY", "GFJZQHHA8V83", "PDCS0QWCVDQ8", "6Y79YCIKZQ72", "ZF83I4KL56X5", "9H780RAAZZA4", "18HLP7SLPBDA", "ZQRAWJ81Q4GT", "9NYU2Z3SCA7S", "7K56OST8NMMJ", "J22YI4XT4YIH", "67T3S8IR1K8S", "1BPCUYA5P2RW", "I8RXH4M8TAYC", "9SH2FY3S5N26", "GPOKWMMTAP81", "YCJPJB0NBCC9", "LGM38H6E6V0R", "CYYMCN2C9QNY", "42ZMW6QT4A8X", "OLCY8GVG9YFX", "PO81RKALCUQS", "STXQGBPDV40S", "VEPPQ7NNMJLV", "QDUNVTR5LT3K", "BJKRDYYEKLLF", "Z1442EPWIHNP", "UXL5GR8M9E3X", "8ODSADPN90Q9", "5QGJE1YA8S7I", "E9O05I1RG7FN", "RLZLUHXXY3UT", "1G8KVH4IYO13", "FCUY5HFY8XKR", "QW1RL50WYJXN", "0FNGSEME37GE", "6C5NLD2UTODX", "3AYZ8S0HBB5N", "MB7NF8PO5NV6", "P8WPOO7D1IF6", "A6OY5EEZ7LHR", "F9KKFY09ZO4L", "1F3FHF5CZNGA", "TYPZDV68APO1", "T99JPVGQ7M92", "JO052WGV1CSH", "5E7828SSYMFM", "BLWUOKPHGWIY", "MSG48IOEE49M", "N4CTN72FFDEP", "JA4N2DVWVQG6", "87XJAOU354A0", "85HZKFXNT7BH", "NDKEXUBB3TV4", "JNWW8SU5SZY2", "31XT530YQC5I", "MGBZE1919PZ9", "W3DHXTN1NJNO", "EL9KJXH7AQ35", "QIXQCRM06NS5", "LQA9G41Y6EZD", "MNX4V0DE0UDV", "0C79P1S81GJN", "P0HXRV7QWQN3", "Q7CFORA75DGA", "4TATFLZ64ONK", "MEK0SB4XTV9S", "2RQDZ2JC095R", "BDSVAZ6KA86M", "UH3FA79HNVDG", "70KZTSZV6QAN", "XXCM7M2TOCZS", "B2105WEZQ58R", "YOZKXGOTMB87", "W3HX37JF83ZJ", "TO9QNDGZPGPI", "A4VUL0OGHWQR", "8ZQAC651LADS"];
 
-/* ══ CRYPTO ══ */
+/* ══ TABS ══════════════════════════════════════════════ */
+function switchTab(name, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('pane-'+name).classList.add('active');
+}
+
+/* ══ CRYPTO ════════════════════════════════════════════ */
 function toB64url(buf){
   return btoa(String.fromCharCode(...new Uint8Array(buf)))
     .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
@@ -311,39 +477,35 @@ function fromB64url(s){
   const bin=atob(s);const b=new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return b.buffer;
 }
-async function importHMACKey(password){
-  return crypto.subtle.importKey('raw',new TextEncoder().encode(password),{name:'HMAC',hash:'SHA-256'},false,['sign','verify']);
+async function importHMACKey(pw){
+  return crypto.subtle.importKey('raw',new TextEncoder().encode(pw),
+    {name:'HMAC',hash:'SHA-256'},false,['sign','verify']);
 }
-function buildMsg(index,code){return new TextEncoder().encode(`qrv1:${index}:${code}`)}
-async function signRecord(hmacKey,index,code){
-  const sig=await crypto.subtle.sign('HMAC',hmacKey,buildMsg(index,code));
-  const mac8=new Uint8Array(sig,0,8);
-  const blob=new Uint8Array(10);
-  blob[0]=(index>>8)&0xff;blob[1]=index&0xff;
-  blob.set(mac8,2);
-  return 'Q'+toB64url(blob.buffer);
+function buildMsg(idx,code){return new TextEncoder().encode(`qrv1:${idx}:${code}`)}
+async function signRecord(hk,idx,code){
+  const sig=await crypto.subtle.sign('HMAC',hk,buildMsg(idx,code));
+  const m=new Uint8Array(sig,0,8);
+  const b=new Uint8Array(10);b[0]=(idx>>8)&0xff;b[1]=idx&0xff;b.set(m,2);
+  return 'Q'+toB64url(b.buffer);
 }
-async function verifyPayload(payload,password){
-  if(!payload.startsWith('Q')||payload.length!==15)
-    throw new Error('Formato inválido — debe ser 15 caracteres iniciando con Q');
-  const blob=new Uint8Array(fromB64url(payload.slice(1)));
-  if(blob.length!==10)throw new Error('Payload corrupto');
-  const index=(blob[0]<<8)|blob[1];
-  if(index>=codes.length)throw new Error(`Índice ${index} fuera de rango`);
-  const mac8s=blob.slice(2,10);
-  const hk=await importHMACKey(password);
-  const sig=await crypto.subtle.sign('HMAC',hk,buildMsg(index,codes[index]));
-  const mac8c=new Uint8Array(sig,0,8);
-  let diff=0;for(let i=0;i<8;i++)diff|=(mac8s[i]^mac8c[i]);
-  if(diff!==0)throw new Error('Firma inválida — clave incorrecta o QR falsificado');
-  return{code:codes[index],index};
+async function verifyPayload(payload,pw){
+  if(!payload.startsWith('Q')||payload.length!==15) throw new Error('Formato inválido');
+  const b=new Uint8Array(fromB64url(payload.slice(1)));
+  if(b.length!==10) throw new Error('Payload corrupto');
+  const idx=(b[0]<<8)|b[1];
+  if(idx>=codes.length) throw new Error(`Índice ${idx} fuera de rango`);
+  const ms=b.slice(2,10);
+  const hk=await importHMACKey(pw);
+  const sig=await crypto.subtle.sign('HMAC',hk,buildMsg(idx,codes[idx]));
+  const mc=new Uint8Array(sig,0,8);
+  let d=0;for(let i=0;i<8;i++)d|=(ms[i]^mc[i]);
+  if(d!==0) throw new Error('Firma inválida — clave incorrecta o QR falsificado');
+  return{code:codes[idx],index:idx};
 }
 
-/* ══ KEY CACHE ══ */
-let _key=null,_pwd='';
-async function getKey(p){if(p!==_pwd){_key=await importHMACKey(p);_pwd=p;}return _key;}
-
-/* ══ KEY METER ══ */
+/* ══ KEY CACHE & METER ════════════════════════════════ */
+let _hk=null,_pw='';
+async function getKey(p){if(p!==_pw){_hk=await importHMACKey(p);_pw=p;}return _hk;}
 function evalKey(v){
   const bar=document.getElementById('keyBar'),hint=document.getElementById('keyHint');
   if(!v){bar.className='key-bar';hint.textContent='Mínimo 8 caracteres recomendado';hint.className='key-hint';return}
@@ -363,38 +525,27 @@ async function previewPayload(){
   alert(`Payload de ejemplo (${s.length} chars):\n\n${s}`);
 }
 
-/* ══ GLOBAL STATE ══ */
+/* ══ GEN ═══════════════════════════════════════════════ */
 const payloads=new Array(codes.length).fill(null);
-
-/* ══ BUILD CARDS ══ */
 function buildCards(){
-  const grid=document.getElementById('grid');
+  const g=document.getElementById('grid');
   codes.forEach((code,i)=>{
-    const last4=code.slice(-4);
-    const c=document.createElement('div');
-    c.className='card';c.id='card_'+i;
-    c.innerHTML=`
-      <div class="qr-wrap empty" id="qr_${i}"></div>
-      <div class="last4">${last4}</div>
+    const c=document.createElement('div');c.className='card';c.id='card_'+i;
+    c.innerHTML=`<div class="qr-wrap empty" id="qr_${i}"></div>
+      <div class="last4">${code.slice(-4)}</div>
       <div class="enc-badge" id="badge_${i}">sin firmar</div>
       <div class="num">#${i+1}</div>`;
-    grid.appendChild(c);
+    g.appendChild(c);
   });
-  const obs=new IntersectionObserver(entries=>{
-    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}});
-  },{threshold:.06});
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.06});
   document.querySelectorAll('.card').forEach(c=>obs.observe(c));
 }
-
-/* ══ GENERATE ══ */
 async function startGenerate(){
   const pwd=document.getElementById('secretKey').value.trim();
   if(!pwd){alert('⚠ Ingresa una clave secreta.');return}
-  const btn=document.getElementById('btnGen');
-  btn.disabled=true;btn.textContent='Procesando…';
+  const btn=document.getElementById('btnGen');btn.disabled=true;btn.textContent='Procesando…';
   document.getElementById('prog-gen').classList.add('visible');
-  const hmacKey=await getKey(pwd);
-  const total=codes.length;let i=0;
+  const hk=await getKey(pwd);const total=codes.length;let i=0;
   async function next(){
     if(i>=total){
       document.getElementById('gen-fill').style.width='100%';
@@ -402,16 +553,14 @@ async function startGenerate(){
       document.getElementById('gen-label').textContent='COMPLETADO';
       document.getElementById('gen-done').classList.add('show');
       document.getElementById('s-gen').textContent=total.toLocaleString();
-      btn.textContent='✓ Generados';
-      document.getElementById('btnZip').disabled=false;return;
+      btn.textContent='✓ Generados';document.getElementById('btnZip').disabled=false;return;
     }
     const end=Math.min(i+20,total);
     await Promise.all(Array.from({length:end-i},(_,k)=>(async(idx)=>{
-      const payload=await signRecord(hmacKey,idx,codes[idx]);
-      payloads[idx]=payload;
+      const p=await signRecord(hk,idx,codes[idx]);payloads[idx]=p;
       const el=document.getElementById('qr_'+idx);
       if(el){el.classList.remove('empty');el.innerHTML='';
-        new QRCode(el,{text:payload,width:150,height:150,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});}
+        new QRCode(el,{text:p,width:150,height:150,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});}
       document.getElementById('badge_'+idx).textContent='🔒 firmado';
       document.getElementById('card_'+idx).classList.add('signed');
     })(i+k)));
@@ -426,121 +575,60 @@ async function startGenerate(){
   next();
 }
 
-/* ══════════════════════════════════════════════════════
-   ZIP — JPG 472×472 px · SOLO el QR, sin etiquetas
-   Nombre de archivo: QR_0001_XXXX.jpg  (sí lleva número)
-══════════════════════════════════════════════════════ */
+/* ══ ZIP ═══════════════════════════════════════════════ */
 async function startZip(){
   if(payloads[0]===null){alert('⚠ Primero genera los QR.');return}
-  const btnZip=document.getElementById('btnZip');
-  btnZip.disabled=true;btnZip.textContent='Empaquetando…';
-  document.getElementById('prog-zip').classList.add('visible');
-  document.getElementById('zip-info').classList.add('visible');
-
-  const QR_PX = 472;   // 4 cm @ 300 DPI — solo el QR, sin margen ni label
-
-  const cv  = document.getElementById('exportCanvas');
-  cv.width  = QR_PX;
-  cv.height = QR_PX;
-  const ctx = cv.getContext('2d');
-
-  const zip   = new JSZip();
-  const total = codes.length;
-
-  async function renderJPG(payload, index){
-    return new Promise((resolve, reject)=>{
+  const btnZip=document.getElementById('btnZip');btnZip.disabled=true;btnZip.textContent='Empaquetando…';
+  document.getElementById('prog-zip').classList.add('visible');document.getElementById('zip-info').classList.add('visible');
+  const QR_PX=472;
+  const cv=document.getElementById('exportCanvas');cv.width=QR_PX;cv.height=QR_PX;
+  const ctx=cv.getContext('2d');const zip=new JSZip();const total=codes.length;
+  async function renderJPG(payload){
+    return new Promise((resolve,reject)=>{
       const tmp=document.createElement('div');
       tmp.style.cssText='position:absolute;left:-9999px;top:-9999px;width:'+QR_PX+'px;height:'+QR_PX+'px';
       document.body.appendChild(tmp);
-
-      new QRCode(tmp,{
-        text:payload,
-        width:QR_PX,height:QR_PX,
-        colorDark:'#000000',colorLight:'#ffffff',
-        correctLevel:QRCode.CorrectLevel.M
-      });
-
+      new QRCode(tmp,{text:payload,width:QR_PX,height:QR_PX,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
       setTimeout(()=>{
-        const qrImg=tmp.querySelector('img')||tmp.querySelector('canvas');
-        // Canvas blanco limpio
-        ctx.fillStyle='#ffffff';
-        ctx.fillRect(0,0,QR_PX,QR_PX);
-
-        function done(){
-          document.body.removeChild(tmp);
-          cv.toBlob(blob=>resolve(blob),'image/jpeg',0.95);
-        }
-
-        if(qrImg){
-          if(qrImg.tagName==='IMG'){
-            const img=new Image();
-            img.onload=()=>{ ctx.drawImage(img,0,0,QR_PX,QR_PX); done(); };
-            img.onerror=reject;
-            img.src=qrImg.src;
-          } else {
-            ctx.drawImage(qrImg,0,0,QR_PX,QR_PX);
-            done();
-          }
-        } else { done(); }
-      }, 40);
+        const qr=tmp.querySelector('img')||tmp.querySelector('canvas');
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,QR_PX,QR_PX);
+        const done=()=>{document.body.removeChild(tmp);cv.toBlob(b=>resolve(b),'image/jpeg',0.95)};
+        if(qr){
+          if(qr.tagName==='IMG'){const im=new Image();im.onload=()=>{ctx.drawImage(im,0,0,QR_PX,QR_PX);done()};im.onerror=reject;im.src=qr.src}
+          else{ctx.drawImage(qr,0,0,QR_PX,QR_PX);done()}
+        }else done();
+      },40);
     });
   }
-
-  let processed=0;
-  const BATCH=5;
-  async function nextBatch(){
-    if(processed>=total){
+  let p=0;
+  async function nb(){
+    if(p>=total){
       document.getElementById('zip-label').textContent='COMPRIMIENDO ZIP…';
-      const zipBlob=await zip.generateAsync(
-        {type:'blob',compression:'DEFLATE',compressionOptions:{level:6}},
-        meta=>{
-          const p=(meta.percent||0).toFixed(0);
-          document.getElementById('zip-fill').style.width=p+'%';
-          document.getElementById('zip-pct').textContent=p+'%';
-        }
-      );
-      const url=URL.createObjectURL(zipBlob);
-      const a=document.createElement('a');
-      a.href=url;a.download='QR_1000_codigos.zip';a.click();
-      URL.revokeObjectURL(url);
-      document.getElementById('zip-fill').style.width='100%';
-      document.getElementById('zip-pct').textContent='100%';
-      document.getElementById('zip-label').textContent='COMPLETADO';
-      document.getElementById('zip-done').classList.add('show');
-      document.getElementById('s-zip').textContent=total.toLocaleString();
-      btnZip.disabled=false;btnZip.textContent='📦 Descargar ZIP';
-      return;
+      const zb=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}},
+        m=>{const pp=(m.percent||0).toFixed(0);document.getElementById('zip-fill').style.width=pp+'%';document.getElementById('zip-pct').textContent=pp+'%'});
+      const url=URL.createObjectURL(zb);const a=document.createElement('a');a.href=url;a.download='QR_1000_codigos.zip';a.click();URL.revokeObjectURL(url);
+      document.getElementById('zip-fill').style.width='100%';document.getElementById('zip-pct').textContent='100%';
+      document.getElementById('zip-label').textContent='COMPLETADO';document.getElementById('zip-done').classList.add('show');
+      document.getElementById('s-zip').textContent=total.toLocaleString();btnZip.disabled=false;btnZip.textContent='📦 Descargar ZIP';return;
     }
-    const end=Math.min(processed+BATCH,total);
-    for(let i=processed;i<end;i++){
-      const num=String(i+1).padStart(4,'0');
-      const last4=codes[i].slice(-4);
-      const filename=`QR_${num}_${last4}.jpg`;   // ← nombre con número y últimos 4
-      try{
-        const blob=await renderJPG(payloads[i],i);
-        zip.file(filename,blob);
-        document.getElementById('card_'+i).classList.add('zipped');
-        document.getElementById('badge_'+i).textContent='📦 en ZIP';
-      }catch(e){console.error('Error en QR',i,e)}
+    const end=Math.min(p+5,total);
+    for(let i=p;i<end;i++){
+      const num=String(i+1).padStart(4,'0'),last4=codes[i].slice(-4);
+      try{const b=await renderJPG(payloads[i]);zip.file(`QR_${num}_${last4}.jpg`,b);
+        document.getElementById('card_'+i).classList.add('zipped');document.getElementById('badge_'+i).textContent='📦 en ZIP';}
+      catch(e){console.error(e)}
     }
-    processed=end;
-    const pct=((processed/total)*100).toFixed(1);
-    document.getElementById('zip-fill').style.width=pct+'%';
-    document.getElementById('zip-pct').textContent=pct+'%';
-    document.getElementById('zip-label').textContent='EMPAQUETANDO  '+processed+' / '+total;
-    document.getElementById('s-zip').textContent=processed.toLocaleString();
-    setTimeout(nextBatch,0);
+    p=end;const pct=((p/total)*100).toFixed(1);
+    document.getElementById('zip-fill').style.width=pct+'%';document.getElementById('zip-pct').textContent=pct+'%';
+    document.getElementById('zip-label').textContent='EMPAQUETANDO  '+p+' / '+total;
+    document.getElementById('s-zip').textContent=p.toLocaleString();setTimeout(nb,0);
   }
-  nextBatch();
+  nb();
 }
 
-/* ══ VERIFY ══ */
+/* ══ VERIFY MODAL ══════════════════════════════════════ */
 function openVerify(){document.getElementById('verifyModal').classList.add('open')}
-function closeVerify(){
-  document.getElementById('verifyModal').classList.remove('open');
-  document.getElementById('verifyResult').className='result-box';
-  document.getElementById('qrContent').value='';
-}
+function closeVerify(){document.getElementById('verifyModal').classList.remove('open');document.getElementById('verifyResult').className='result-box';document.getElementById('qrContent').value=''}
 async function verifyQR(){
   const raw=document.getElementById('qrContent').value.trim();
   const pass=document.getElementById('verifyKey').value;
@@ -550,14 +638,394 @@ async function verifyQR(){
   try{
     const{code,index}=await verifyPayload(raw,pass);
     box.className='result-box ok';
-    box.innerHTML=`<span class="orig">✓ QR AUTÉNTICO Y VÁLIDO</span>Código: <strong>${code}</strong><br>Últimos 4: <strong>${code.slice(-4)}</strong><br>Registro: <strong>#${index+1}</strong><br>Payload: <strong>${raw}</strong>`;
+    box.innerHTML=`<span class="orig">✓ QR AUTÉNTICO Y VÁLIDO</span>Código: <strong>${code}</strong><br>Últ. 4: <strong>${code.slice(-4)}</strong><br>Registro: <strong>#${index+1}</strong>`;
+  }catch(e){box.className='result-box fail';box.innerHTML=`<span class="orig">✗ FALLIDO</span>${e.message}`}
+}
+
+/* ══════════════════════════════════════════════════════
+   DESENCRIPTADO MASIVO
+══════════════════════════════════════════════════════ */
+const Y = () => new Promise(r=>setTimeout(r,0)); // yield al navegador
+
+let decPdfFile   = null;
+let decImgFiles  = [];
+let decResults   = [];
+let decThumbs    = {}; // map payload -> dataURL thumbnail
+
+// ── Drag & drop / file pick ─────────────────────────
+function onDropPDF(e){
+  e.preventDefault();document.getElementById('dz-pdf').classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type==='application/pdf') setPDF(f); else alert('Sube un archivo PDF.');
+}
+function onFilePDF(e){const f=e.target.files[0];if(f)setPDF(f);}
+function setPDF(f){
+  decPdfFile=f;decImgFiles=[];
+  showChosen('pdf-chosen',`📑 ${f.name} (${Math.round(f.size/1024)} KB)`);
+  showChosen('folder-chosen','');
+  document.getElementById('btnDec').disabled=false;
+}
+
+function getImageFiles(fileList){
+  // Acepta JPG, JPEG, PNG — y también archivos sin extensión visible
+  // que sean de tipo image/* (como pasa en algunas carpetas de Windows)
+  return [...fileList].filter(f => {
+    const name = f.name.toLowerCase();
+    const type = (f.type || '').toLowerCase();
+    return /\.(jpe?g|png|bmp|webp)$/.test(name) ||
+           type.startsWith('image/') ||
+           // Sin extensión pero nombre tipo QR_0001_XXXX
+           /^qr_\d+_/i.test(name);
+  });
+}
+
+function onDropFolder(e){
+  e.preventDefault();
+  document.getElementById('dz-folder').classList.remove('drag');
+  const imgs = getImageFiles(e.dataTransfer.files);
+  if(imgs.length > 0) setImgFiles(imgs);
+  else alert('No se encontraron imágenes. Arrastra directamente los archivos JPG o la carpeta.');
+}
+function onFileFolder(e){
+  // Con webkitdirectory el navegador entrega TODOS los archivos de la carpeta
+  const all  = [...e.target.files];
+  const imgs = getImageFiles(all);
+  if(imgs.length > 0){
+    setImgFiles(imgs);
+  } else if(all.length > 0){
+    // Hay archivos pero ninguno pasó el filtro — usar todos igualmente
+    setImgFiles(all);
+    console.warn('Archivos encontrados sin extensión imagen reconocida, procesando igual:', all.length);
+  } else {
+    alert('La carpeta está vacía o no se pudieron leer los archivos.');
+  }
+}
+function setImgFiles(files){
+  decImgFiles = files;
+  decPdfFile  = null;
+  const names = files.slice(0,3).map(f=>f.name).join(', ');
+  const extra = files.length > 3 ? ` … +${files.length-3} más` : '';
+  showChosen('folder-chosen', `📁 ${files.length} archivos  —  ${names}${extra}`);
+  showChosen('pdf-chosen', '');
+  document.getElementById('btnDec').disabled = false;
+}
+function showChosen(id,txt){
+  const el=document.getElementById(id);
+  el.textContent=txt;el.style.display=txt?'block':'none';
+}
+
+// ── jsQR sobre ImageData con múltiples intentos ─────
+function tryJsQR(data, w, h){
+  // Prueba ambas inversiones — devuelve objeto {data, location} o null
+  try{
+    const r = jsQR(data, w, h, {inversionAttempts:'attemptBoth'});
+    if(r && r.data && r.data[0]==='Q' && r.data.length===15) return {data:r.data, location:r.location};
+  }catch(e){}
+  return null;
+}
+
+// ── Escanear una página PDF → payloads Set ──────────
+async function scanPDFPage(page, cv, ctx){
+  for(const scale of [2.5, 2.0, 1.5]){
+    const vp = page.getViewport({scale});
+    cv.width = vp.width; cv.height = vp.height;
+    try{ await page.render({canvasContext:ctx, viewport:vp}).promise; }
+    catch(e){ continue; }
+    const W=cv.width, H=cv.height;
+    const found = new Set();
+    // Intento página completa
+    try{
+      const r = tryJsQR(ctx.getImageData(0,0,W,H).data, W, H);
+      if(r) found.add(r);
+    }catch(e){}
+    // Grid 5×4
+    const COLS=5, ROWS=4, PAD=0.15;
+    const cW=W/COLS, cH=H/ROWS;
+    for(let row=0;row<ROWS;row++){
+      for(let col=0;col<COLS;col++){
+        const x=Math.max(0,Math.floor(col*cW-cW*PAD));
+        const y=Math.max(0,Math.floor(row*cH-cH*PAD));
+        const w=Math.min(W-x,Math.ceil(cW*(1+PAD*2)));
+        const h=Math.min(H-y,Math.ceil(cH*(1+PAD*2)));
+        try{
+          const p=tryJsQR(ctx.getImageData(x,y,w,h).data,w,h);
+          if(p) found.add(p);
+        }catch(e){}
+      }
+      await Y();
+    }
+    if(found.size>0) return found;
+  }
+  return new Set();
+}
+
+
+// ── Escanear un File imagen (JPG/PNG) → payload o null ──
+// Usa FileReader (data URL) — funciona en local, servidor y file://
+// Sin CORS, sin blob URL, sin willReadFrequently cacheado
+function scanImageFile(file){
+  return new Promise(resolve => {
+    const reader = new FileReader();
+
+    reader.onload = e => {
+      const img = new Image();
+
+      img.onload = () => {
+        const W = img.naturalWidth  || img.width  || 472;
+        const H = img.naturalHeight || img.height || 472;
+
+        // Intentar a distintas resoluciones hasta encontrar el QR
+        const scales = [1.0, 0.6, 1.5, 0.4];
+        for(const sc of scales){
+          try{
+            const sw = Math.max(50, Math.round(W * sc));
+            const sh = Math.max(50, Math.round(H * sc));
+            const cv = document.createElement('canvas');
+            cv.width = sw; cv.height = sh;
+            const ctx = cv.getContext('2d', {willReadFrequently: true});
+            ctx.drawImage(img, 0, 0, sw, sh);
+            const id = ctx.getImageData(0, 0, sw, sh);
+            if(id && id.data && id.data.length > 0){
+              const pObj = tryJsQR(id.data, sw, sh);
+              if(pObj){ resolve({data:pObj.data, location:pObj.location, canvas:cv}); return; }
+            }
+          }catch(ex){}
+        }
+        resolve(null);
+      };
+
+      img.onerror = () => resolve(null);
+      img.src = e.target.result;  // data URL — sin CORS
+    };
+
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);   // Lee el archivo como base64 data URL
+  });
+}
+
+// ── Verificar y registrar un payload ───────────────
+async function processOne(payload,source,pwd){
+  try{
+    const{code,index}=await verifyPayload(payload,pwd);
+    return{ok:true,payload,code,last4:code.slice(-4),index:index+1,source};
   }catch(e){
-    box.className='result-box fail';
-    box.innerHTML=`<span class="orig">✗ VERIFICACIÓN FALLIDA</span>${e.message}`;
+    return{ok:false,payload,error:e.message,source};
   }
 }
 
-/* ══ PARTICLES ══ */
+// ── Actualizar barra de progreso ────────────────────
+function updateDec(done,total,label){
+  const pct=Math.min(100,Math.round((done/total)*100));
+  document.getElementById('dec-fill').style.width=pct+'%';
+  document.getElementById('dec-pct').textContent=pct+'%';
+  document.getElementById('dec-label').textContent=label;
+}
+
+// ── Entrada principal ────────────────────────────────
+async function startDecrypt(){
+  const pwd=document.getElementById('decKey').value.trim();
+  if(!pwd){alert('⚠ Ingresa tu clave secreta.');return}
+  if(!decPdfFile&&decImgFiles.length===0){alert('⚠ Sube un PDF o selecciona una carpeta.');return}
+
+  const btn=document.getElementById('btnDec');btn.disabled=true;btn.textContent='Procesando…';
+  document.getElementById('prog-dec').classList.add('visible');
+  document.getElementById('dec-done').classList.remove('show');
+  document.getElementById('resultsWrap').classList.remove('visible');
+  document.getElementById('resultsBody').innerHTML='';
+  decResults=[];
+
+  let found=0,valid=0,invalid=0;
+
+  if(decPdfFile){
+    /* ─── MODO PDF ────────────────────────────────── */
+    const ab=await decPdfFile.arrayBuffer();
+    let pdf;
+    try{pdf=await pdfjsLib.getDocument({data:ab, disableWorker:true}).promise;}
+    catch(e){alert('Error al cargar PDF: '+e.message);btn.disabled=false;btn.textContent='🔓 Desencriptar todo';return}
+    const total=pdf.numPages;
+    const cv=document.getElementById('scanCanvas');
+    const ctx=cv.getContext('2d',{willReadFrequently:true});
+
+    for(let pn=1;pn<=total;pn++){
+      updateDec(pn-1,total,`PDF · PÁGINA ${pn}/${total}  ·  ✓ válidos: ${valid}`);
+      await Y();
+      let page;try{page=await pdf.getPage(pn);}catch(e){continue}
+      const payloadSet=await scanPDFPage(page,cv,ctx);
+    for(const pObj of payloadSet){
+        const p = typeof pObj === 'string' ? pObj : (pObj.data || null);
+        if(!p) continue;
+        // if payloadSet contains objects with location, try to build thumbnail from page canvas
+        if(pObj.location){
+          try{
+            const loc = pObj.location;
+            // bounding box
+            const xs = [loc.topLeftCorner.x, loc.topRightCorner.x, loc.bottomRightCorner.x, loc.bottomLeftCorner.x];
+            const ys = [loc.topLeftCorner.y, loc.topRightCorner.y, loc.bottomRightCorner.y, loc.bottomLeftCorner.y];
+            const minX = Math.max(0, Math.floor(Math.min(...xs)-6));
+            const minY = Math.max(0, Math.floor(Math.min(...ys)-6));
+            const maxX = Math.min(cv.width, Math.ceil(Math.max(...xs)+6));
+            const maxY = Math.min(cv.height, Math.ceil(Math.max(...ys)+6));
+            const w = Math.max(16, maxX - minX);
+            const h = Math.max(16, maxY - minY);
+            const tcv = document.createElement('canvas'); tcv.width=120; tcv.height=120;
+            const tctx = tcv.getContext('2d');
+            // draw cropped area scaled to 120
+            tctx.fillStyle='#fff'; tctx.fillRect(0,0,120,120);
+            tctx.drawImage(cv, minX, minY, w, h, 0, 0, 120, 120);
+            decThumbs[p] = tcv.toDataURL('image/jpeg',0.85);
+          }catch(e){/* ignore */}
+        }
+        found++;
+        const row=await processOne(p,`Pág. ${pn}`,pwd);
+        if(row.ok)valid++;else invalid++;
+        decResults.push(row);appendDecRow(row,found);
+      }
+      updateDec(pn,total,`PDF · PÁGINA ${pn}/${total}  ·  ✓ ${valid}  ✗ ${invalid}`);
+    }
+  } else {
+    /* ─── MODO CARPETA/IMÁGENES ───────────────────── */
+    const files = decImgFiles;
+    const total  = files.length;
+    // Ordenar por nombre para procesar en orden QR_0001_... QR_0002_...
+    const sorted = [...files].sort((a,b)=>a.name.localeCompare(b.name));
+
+    for(let i=0; i<total; i++){
+      const f = sorted[i];
+      await Y();  // Siempre yield — UI nunca se congela
+      updateDec(i, total,
+        `JPG ${String(i+1).padStart(4,'0')}/${total}  ·  ✓ ${valid}  ✗ ${invalid}  — ${f.name}`);
+
+    const scanResult = await scanImageFile(f);
+      if(scanResult && scanResult.data){
+        const payload = scanResult.data;
+        // build thumbnail from the canvas used (scanResult.canvas)
+        try{
+          const tcv = document.createElement('canvas'); tcv.width=120; tcv.height=120; const tctx = tcv.getContext('2d');
+          tctx.fillStyle='#fff'; tctx.fillRect(0,0,120,120);
+          // draw centered scaled
+          tctx.drawImage(scanResult.canvas, 0, 0, scanResult.canvas.width, scanResult.canvas.height, 0, 0, 120, 120);
+          decThumbs[payload] = tcv.toDataURL('image/jpeg',0.85);
+        }catch(e){/* ignore */}
+
+        found++;
+        const row = await processOne(payload, f.name, pwd);
+        if(row.ok) valid++; else invalid++;
+        decResults.push(row);
+        appendDecRow(row, found);
+      }
+      // No contamos como inválido si simplemente no detectó QR (puede ser archivo no-QR)
+    }
+  }
+
+  // ── Finalizar ──────────────────────────────────────
+  document.getElementById('dec-fill').style.width='100%';
+  document.getElementById('dec-pct').textContent='100%';
+  document.getElementById('dec-label').textContent=
+    `✓ LISTO · ${found} QR encontrados · ${valid} válidos · ${invalid} inválidos`;
+  document.getElementById('dec-done').classList.add('show');
+  document.getElementById('r-total').textContent=found+' QR leídos';
+  document.getElementById('r-ok').textContent=valid+' válidos';
+  document.getElementById('r-fail').textContent=(found-valid)+' inválidos';
+  document.getElementById('resultsWrap').classList.add('visible');
+  btn.disabled=false;btn.textContent='🔓 Desencriptar todo';
+
+  // ── Auto-descarga CSV al terminar ──────────────────
+  if(decResults.length>0){
+    const ts = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
+    const src = decPdfFile ? 'PDF' : 'Carpeta';
+    exportCSV(`QR_Desencriptados_${src}_${ts}.csv`);
+  }
+}
+
+function appendDecRow(row,n){
+  const tb=document.getElementById('resultsBody');
+  const tr=document.createElement('tr');
+  tr.className=row.ok?'row-ok':'row-fail';
+
+  // attach thumbnail from decThumbs map if available
+  if(!row.thumb && typeof row.payload === 'string' && decThumbs[row.payload]){
+    row.thumb = decThumbs[row.payload];
+  }
+
+  // simple HTML escape to avoid breaking the table
+  function esc(s){ if(s===null||s===undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // Thumbnail cell (if available)
+  const thumbCell = '<td style="text-align:center">' + (row.thumb ? ('<img src="'+esc(row.thumb)+'" width="48" height="48" style="object-fit:cover;border-radius:4px;border:1px solid #0d2535">') : '—') + '</td>';
+
+  if(row.ok){
+    tr.innerHTML =
+      '<td style="color:var(--text2);text-align:center">'+esc(n)+'</td>' +
+      thumbCell +
+      '<td><span class="badge-ok">✓ VÁLIDO</span></td>' +
+      '<td class="td-payload">'+esc(row.payload)+'</td>' +
+      '<td class="td-code">'+esc(row.code)+'</td>' +
+      '<td class="td-last4">'+esc(row.last4)+'</td>' +
+      '<td style="color:var(--text2);text-align:center">#'+esc(row.index)+'</td>' +
+      '<td class="td-src" title="'+esc(row.source)+'">'+esc(row.source)+'</td>';
+  } else {
+    tr.innerHTML =
+      '<td style="color:var(--text2);text-align:center">'+esc(n)+'</td>' +
+      thumbCell +
+      '<td><span class="badge-fail">✗ INVÁLIDO</span></td>' +
+      '<td class="td-payload">'+esc(row.payload||'—')+'</td>' +
+      '<td class="td-err" colspan="3">'+esc(row.error||'No se encontró QR')+'</td>' +
+      '<td class="td-src" title="'+esc(row.source)+'">'+esc(row.source)+'</td>';
+  }
+
+  tb.appendChild(tr);
+  // ensure results area visible immediately
+  document.getElementById('resultsWrap').classList.add('visible');
+  // debug log
+  try{console.debug('appendDecRow', {n:n, ok:row.ok, payload:row.payload, source:row.source});}catch(e){}
+  if(n%10===0) tr.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+function exportCSV(autoName){
+  if(!decResults.length){alert('No hay resultados.');return}
+  const head='#,Estado,Encriptado (Payload QR),Desencriptado (Código),Ultimos 4,Registro,Fuente\n';
+  const rows=decResults.map((r,i)=>{
+    const esc=v=>`"${String(v||'').replace(/"/g,'""')}"`;
+    return r.ok
+      ? `${i+1},VALIDO,${esc(r.payload)},${esc(r.code)},${esc(r.last4)},${r.index},${esc(r.source)}`
+      : `${i+1},INVALIDO,${esc(r.payload||'')},,,,${esc(r.source)}`;
+  }).join('\n');
+  const blob=new Blob(['\uFEFF'+head+rows],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=autoName||'qr_desencriptados.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Export Excel (xlsx) with thumbnails column using SheetJS
+function exportXLSX(){
+  if(!decResults.length){alert('No hay resultados.');return}
+  // Build worksheet rows
+  const rows=[['#','Estado','Thumbnail (base64)','Encriptado (Payload QR)','Desencriptado (Código)','Ultimos 4','Registro','Fuente']];
+  decResults.forEach((r,i)=>{
+    rows.push([
+      i+1,
+      r.ok? 'VALIDO' : 'INVALIDO',
+      r.thumb? r.thumb.split(',')[1] : '',
+      r.payload || '',
+      r.code || '',
+      r.last4 || '',
+      r.index || '',
+      r.source || ''
+    ]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Resultados');
+  // Add images is non-trivial with SheetJS community; instead include base64 column.
+  const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  const blob = new Blob([wbout], {type:'application/octet-stream'});
+  const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='qr_desencriptados.xlsx'; a.click(); URL.revokeObjectURL(url);
+}
+
+/* ══ PARTICLES ═════════════════════════════════════════ */
 (function(){
   const cv=document.getElementById('canvas-bg'),ctx=cv.getContext('2d');
   let W,H,pts=[];
@@ -574,7 +1042,8 @@ async function verifyQR(){
     });
     for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
       const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
-      if(d<130){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(0,180,216,${.18*(1-d/130)})`;ctx.lineWidth=.6;ctx.stroke()}
+      if(d<130){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+        ctx.strokeStyle=`rgba(0,180,216,${.18*(1-d/130)})`;ctx.lineWidth=.6;ctx.stroke()}
     }
     requestAnimationFrame(draw);
   }
