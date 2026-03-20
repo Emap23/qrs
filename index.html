@@ -10,6 +10,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.legacy.min.js"></script>
   <style>
     :root{
       --bg:#080d14;--panel:#0f1c2e;--border:#1a3a5c;
@@ -883,7 +884,13 @@ function scanImageFile(file){
             }
           }catch(ex){}
         }
-        resolve(null);
+        // As a last attempt use QRScanner library (WebAssembly/worker) — faster on many images
+        try{
+          QRScanner.scanImage(file, { returnDetailedScanResult: true }).then(res=>{
+            if(res && res.data){ dbg('scanImageFile: qr-scanner found '+file.name+' -> '+res.data); resolve({data:res.data, location:null, canvas:null}); }
+            else resolve(null);
+          }).catch(e=>{ dbg('qr-scanner failed '+file.name+': '+e.message); resolve(null); });
+        }catch(e){ resolve(null); }
       };
 
       img.onerror = () => resolve(null);
