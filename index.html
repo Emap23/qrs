@@ -185,8 +185,10 @@
     tr:last-child td{border-bottom:none}
     tr.row-ok{background:#020e06}tr.row-ok:hover{background:#041408}
     tr.row-fail{background:#0e0204}tr.row-fail:hover{background:#160306}
+    tr.row-detected{background:#102226}tr.row-detected:hover{background:#15333a}
     .badge-ok{color:var(--green);font-size:.55rem;font-weight:700}
     .badge-fail{color:var(--red);font-size:.55rem;font-weight:700}
+    .badge-detected{color:var(--amber);font-size:.55rem;font-weight:700}
     .td-payload{
       color:var(--amber);font-size:.62rem;letter-spacing:.06em;
       font-family:'Space Mono',monospace;font-weight:700;
@@ -368,7 +370,7 @@
         </div>
 
       <!-- Clave + botón -->
-      <div class="dec-key-row">
+        <div class="dec-key-row">
         <div class="field">
           <label>Clave secreta</label>
           <input type="password" id="decKey" placeholder="La misma clave usada al generar…">
@@ -403,6 +405,10 @@
           <span class="rsumm rsumm-fail"  id="r-fail">0 inválidos</span>
           <button class="btn btn-teal btn-csv" onclick="exportCSV()">⬇ CSV</button>
           <button class="btn btn-teal btn-csv" onclick="exportXLSX()">⬇ XLSX</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <input type="checkbox" id="diagMode" />
+          <label for="diagMode" style="font-size:.58rem;color:var(--text2);">Modo diagnóstico — mostrar intentos e invertir/umbralizar imágenes</label>
         </div>
       </div>
       <div id="debugPanel" style="background:#021018;border:1px solid #013242;padding:8px;border-radius:6px;margin-top:10px;font-family:'Space Mono',monospace;font-size:12px;color:#7fd4a0;max-height:140px;overflow:auto;white-space:pre-wrap"></div>
@@ -762,6 +768,41 @@ async function detectBarcodeOnCanvas(canvas){
     if(robust) return robust;
   }catch(e){}
 
+  // Diagnostic: try inverted and thresholded image if checkbox enabled
+  try{
+    const diagEl = document.getElementById && document.getElementById('diagMode');
+    const diag = diagEl && diagEl.checked;
+    if(diag){
+      try{
+        const ctx = canvas.getContext('2d');
+        const id = ctx.getImageData(0,0,canvas.width, canvas.height);
+        // invert colors
+        const invData = new Uint8ClampedArray(id.data.length);
+        for(let i=0;i<id.data.length;i+=4){ invData[i]=255-id.data[i]; invData[i+1]=255-id.data[i+1]; invData[i+2]=255-id.data[i+2]; invData[i+3]=255; }
+        const inv = new ImageData(invData, id.width, id.height);
+        const icv = document.createElement('canvas'); icv.width=canvas.width; icv.height=canvas.height; icv.getContext('2d').putImageData(inv,0,0);
+        const p2 = tryJsQR(inv.data, canvas.width, canvas.height);
+        if(p2){ dbg('detectBarcodeOnCanvas: inverted found -> '+p2.data); return {data:p2.data, location:p2.location, canvas:icv}; }
+      }catch(e){/* ignore */}
+
+      try{
+        const ctx = canvas.getContext('2d');
+        const id = ctx.getImageData(0,0,canvas.width, canvas.height);
+        // simple threshold
+        const thrData = new Uint8ClampedArray(id.data.length);
+        for(let i=0;i<id.data.length;i+=4){
+          const v = (id.data[i]+id.data[i+1]+id.data[i+2])/3;
+          const c = v>128?255:0;
+          thrData[i]=thrData[i+1]=thrData[i+2]=c; thrData[i+3]=255;
+        }
+        const thr = new ImageData(thrData, id.width, id.height);
+        const tcv = document.createElement('canvas'); tcv.width=canvas.width; tcv.height=canvas.height; tcv.getContext('2d').putImageData(thr,0,0);
+        const p3 = tryJsQR(thr.data, canvas.width, canvas.height);
+        if(p3){ dbg('detectBarcodeOnCanvas: threshold found -> '+p3.data); return {data:p3.data, location:p3.location, canvas:tcv}; }
+      }catch(e){/* ignore */}
+    }
+  }catch(e){}
+
   return null;
 }
 
@@ -877,20 +918,45 @@ function scanImageFile(file){
             const id = ctx.getImageData(0, 0, sw, sh);
             if(id && id.data && id.data.length > 0){
               const pObj = tryJsQR(id.data, sw, sh);
-              if(pObj){ console.debug('scanImageFile: found', file.name, pObj.data); resolve({data:pObj.data, location:pObj.location, canvas:cv}); return; }
+              if(pObj){ dbg('scanImageFile: found(jsQR) '+file.name+' -> '+pObj.data); resolve({data:String(pObj.data).trim(), location:pObj.location, canvas:cv}); return; }
               // try more robust detection on the canvas (rotations/scales)
               const robust = detectQRFromCanvas(cv);
-              if(robust){ console.debug('scanImageFile: robust found', file.name, robust.data); resolve({data:robust.data, location:robust.location, canvas:robust.canvas}); return; }
+              if(robust){ dbg('scanImageFile: robust found '+file.name+' -> '+robust.data); resolve({data:String(robust.data).trim(), location:robust.location, canvas:robust.canvas}); return; }
             }
           }catch(ex){}
         }
         // As a last attempt use QRScanner library (WebAssembly/worker) — faster on many images
         try{
-          QRScanner.scanImage(file, { returnDetailedScanResult: true }).then(res=>{
-            if(res && res.data){ dbg('scanImageFile: qr-scanner found '+file.name+' -> '+res.data); resolve({data:res.data, location:null, canvas:null}); }
+          // QrScanner (legacy build) returns a string or object depending on options
+          QrScanner.scanImage(file).then(res=>{
+            const val = (res && typeof res === 'string') ? res : (res && res.data) ? res.data : null;
+            if(val){ dbg('scanImageFile: QrScanner found '+file.name+' -> '+String(val).trim()); resolve({data:String(val).trim(), location:null, canvas:null}); }
             else resolve(null);
-          }).catch(e=>{ dbg('qr-scanner failed '+file.name+': '+e.message); resolve(null); });
+          }).catch(e=>{ dbg('QrScanner failed '+file.name+': '+(e&&e.message)); resolve(null); });
         }catch(e){ resolve(null); }
+
+        // Diagnostic: if user enabled diagnostic mode, try invert/threshold on full-size canvas
+        try{
+          const diagEl = document.getElementById && document.getElementById('diagMode');
+          const diag = diagEl && diagEl.checked;
+          if(diag){
+            const cvd = document.createElement('canvas'); cvd.width = Math.max(50, Math.round(W)); cvd.height = Math.max(50, Math.round(H));
+            const ctxd = cvd.getContext('2d'); ctxd.drawImage(img,0,0,cvd.width,cvd.height);
+            try{
+              const id0 = ctxd.getImageData(0,0,cvd.width,cvd.height);
+              // invert colors
+              for(let i=0;i<id0.data.length;i+=4){ id0.data[i]=255-id0.data[i]; id0.data[i+1]=255-id0.data[i+1]; id0.data[i+2]=255-id0.data[i+2]; }
+              const pInv = tryJsQR(id0.data, cvd.width, cvd.height);
+              if(pInv){ dbg('scanImageFile: inverted found '+file.name+' -> '+pInv.data); resolve({data:String(pInv.data).trim(), location:null, canvas:cvd}); return; }
+            }catch(e){}
+            try{
+              const id1 = ctxd.getImageData(0,0,cvd.width,cvd.height);
+              for(let i=0;i<id1.data.length;i+=4){ const v=(id1.data[i]+id1.data[i+1]+id1.data[i+2])/3; const c=v>140?255:0; id1.data[i]=id1.data[i+1]=id1.data[i+2]=c; }
+              const pThr = tryJsQR(id1.data, cvd.width, cvd.height);
+              if(pThr){ dbg('scanImageFile: threshold found '+file.name+' -> '+pThr.data); resolve({data:String(pThr.data).trim(), location:null, canvas:cvd}); return; }
+            }catch(e){}
+          }
+        }catch(e){}
       };
 
       img.onerror = () => resolve(null);
@@ -905,6 +971,15 @@ function scanImageFile(file){
 // ── Verificar y registrar un payload ───────────────
 async function processOne(payload,source,pwd){
   try{
+    // If diagnostic mode is enabled, skip verification and mark as detected-only
+    try{
+      const diagEl = document.getElementById && document.getElementById('diagMode');
+      const diag = diagEl && diagEl.checked;
+      if(diag){
+        return {ok:null,payload,error:'Diagnostic mode — verification skipped',source};
+      }
+    }catch(e){}
+
     const{code,index}=await verifyPayload(payload,pwd);
     return{ok:true,payload,code,last4:code.slice(-4),index:index+1,source};
   }catch(e){
@@ -1067,13 +1142,24 @@ function appendDecRow(row,n){
       '<td style="color:var(--text2);text-align:center">#'+esc(row.index)+'</td>' +
       '<td class="td-src" title="'+esc(row.source)+'">'+esc(row.source)+'</td>';
   } else {
-    tr.innerHTML =
-      '<td style="color:var(--text2);text-align:center">'+esc(n)+'</td>' +
-      thumbCell +
-      '<td><span class="badge-fail">✗ INVÁLIDO</span></td>' +
-      '<td class="td-payload">'+esc(row.payload||'—')+'</td>' +
-      '<td class="td-err" colspan="3">'+esc(row.error||'No se encontró QR')+'</td>' +
-      '<td class="td-src" title="'+esc(row.source)+'">'+esc(row.source)+'</td>';
+    if(row.ok === null){
+      tr.className = 'row-detected';
+      tr.innerHTML =
+        '<td style="color:var(--text2);text-align:center">'+esc(n)+'</td>' +
+        thumbCell +
+        '<td><span class="badge-detected">• DETECTADO</span></td>' +
+        '<td class="td-payload">'+esc(row.payload||'—')+'</td>' +
+        '<td class="td-err" colspan="3">'+esc(row.error||'No verificado')+'</td>' +
+        '<td class="td-src" title="'+esc(row.source)+'">'+esc(row.source)+'</td>';
+    } else {
+      tr.innerHTML =
+        '<td style="color:var(--text2);text-align:center">'+esc(n)+'</td>' +
+        thumbCell +
+        '<td><span class="badge-fail">✗ INVÁLIDO</span></td>' +
+        '<td class="td-payload">'+esc(row.payload||'—')+'</td>' +
+        '<td class="td-err" colspan="3">'+esc(row.error||'No se encontró QR')+'</td>' +
+        '<td class="td-src" title="'+esc(row.source)+'">'+esc(row.source)+'</td>';
+    }
   }
 
   tb.appendChild(tr);
